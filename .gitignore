@@ -1,0 +1,9 @@
+*_pycache_*
+Logs
+SYSINTERNAL/*
+TestLogs
+VBA
+*.xlsm
+not_important
+daccmd
+t_*.*
