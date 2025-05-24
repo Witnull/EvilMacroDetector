@@ -1,15 +1,15 @@
 import json
-import datetime
+from datetime import datetime
 import os
 
 class Blacklist:
     """ class to track blacklisted IP addresses, DLLs, and processes """
     def __init__(self, log_dir, log_func):
-
+        self.last_saved = datetime.now()
         self.save_dir = log_dir
         self.log_func = log_func
         os.makedirs(self.save_dir, exist_ok=True)
-        self.file_path = os.path.join(self.save_dir, "blacklist.json")
+        self.file_path = os.path.join( os.path.dirname(os.path.abspath(__file__)),'blacklist.json') #os.path.join(self.save_dir, "blacklist.json")
         self.exclusions_path = os.path.join( os.path.dirname(os.path.abspath(__file__)),'exclusions.json')
         # List of blacklisted 
         self.suspicious_stuff = {
@@ -20,13 +20,16 @@ class Blacklist:
             # Suspicious DLLs 
             "suspicious_dll":['ole32.dll', 'vbscript.dll', 'jscript.dll'],
             # Suspicious processes
-            "suspicious_process": ['cmd.exe', 'powershell.exe', 'wscript.exe', 'cscript.exe', 'calc.exe','mspaint.exe','notepad.exe'],
+            "suspicious_process": [
+                'cmd.exe', 'powershell.exe', 'wscript.exe', 'cscript.exe', #cmdline
+                'calc.exe','mspaint.exe','notepad.exe' # non internet processes
+                ],
             # Office processes
             "office_process": ['winword.exe', 'excel.exe', 'powerpnt.exe'],
             # Suspicious file extensions
             "suspicious_exe_extension": ['exe', 'dll','py', 'pl', 'bat', 'ps1', 'sh', 'cmd', 'bin', 'com', 'vbs', 'js'],
             # Suspicious commands
-            "suspicious_commands_keyword": ['cmd', 'powershell', 'net', 'reg', 'taskkill', 'sc', 'wmic'],
+            "suspicious_commands": ['cmd', 'powershell', 'net', 'reg', 'taskkill', 'sc', 'wmic', 'curl'],
             # Suspicuous Office extensions
             "suspicious_office_extension": ["docm", "dotm", "xlm", "xlam", "xlsm", "xltm", "potm",  "ppsm", "pptm", "sldm", "ppam"],
             # Ref: https://community.spiceworks.com/t/ms-office-documents-with-macros-easy-way-to-identify-and-filter/952121/7
@@ -48,13 +51,16 @@ class Blacklist:
         with open(self.exclusions_path, 'r') as f:
             self.exclusions = json.load(f)
 
-    def save_to_json(self):
+    def save_to_json(self, force=False):
         """ Save the blacklist to a JSON file """
+        if not force and (datetime.now() - self.last_saved).total_seconds() < 60:
+            return False
         try:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             self.suspicious_stuff["timestamp"] = timestamp
             with open(self.file_path, 'w') as f:
                 json.dump(self.suspicious_stuff, f)
+            self.last_saved = datetime.now()
             return True
         except Exception as e:
             return False

@@ -1,37 +1,45 @@
-import os
-import subprocess
-import time
-from datetime import datetime
-import sys
+import asyncio
+import hashlib
 import io
 import json
-import re
-import asyncio
-import psutil
-import xml.etree.ElementTree as ET
-import uuid
-import magic
-import pefile
+import json5
 import logging
+import magic
+import matplotlib.pyplot as plt
 import networkx as nx
-import hashlib
+import os
+import pefile
+import psutil
+import re
+import subprocess
+import sys
+import time
+import trio
+import xml.etree.ElementTree as ET
+from aioresult import ResultCapture
+from datetime import datetime
+from scapy.all import sniff, IP, TCP, UDP, wrpcap,DNS, DNSQR, Raw
+from scapy.main import load_layer
+load_layer("tls")
+from scapy.layers.tls.record import TLS
+import uuid
 # Prevent errors from being printed to the console
 sys.stderr = sys.stderr or io.StringIO()
 sys.stdout = sys.stdout or io.StringIO()
-
-import matplotlib.pyplot as plt
+# OLE related imports
 import oletools
 from oletools.olevba import VBA_Parser, VBA_Scanner
 from oletools.msodde import process_file as extract_dde
-import trio
-from aioresult import ResultCapture
-from modules.deobfuscator import deobfuscator
+
+# Local modules
 from modules.blacklist import Blacklist
 from modules.watchlist import Watchlist
+from modules.deobfuscator import deobfuscator
+from modules.parser import Parser
 from modules.threat_response import ThreatResponse
-# Suppress console errors
-sys.stderr = sys.stderr or io.StringIO()
-sys.stdout = sys.stdout or io.StringIO()
+from modules.watchlist import Watchlist
+
+
 
 # Define Office file extensions
 word = ['doc', 'docx', 'docm', 'dot', 'dotx', 'docb', 'dotm']
@@ -39,14 +47,21 @@ excel = ['xls', 'xlsx', 'xlsm', 'xlt', 'xlm', 'xltx', 'xltm', 'xlsb', 'xla', 'xl
 ppt = ['ppt', 'pptx', 'pptm', 'pot', 'pps', 'potx', 'potm', 'ppam', 'ppsx', 'sldx', 'sldm']
 # Ref: https://github.com/tehsyntx/loffice/blob/master/loffice.py#L565
 
+"""
+Class Parser - def check_* - like parser - extract important information 
+Class Analyze - def analyze_* - the detect , correlations 
+"""
 
 class Analyzer:
-    def __init__(self, sysinternals_path, log_func, log_dir):
+    def __init__(self, sysinternals_path, log_dir, blacklist, watchlist, log_func):
         """Initialize with paths to Sysinternals tools, log directory, and config directory."""
-        self.sysinternals_path = sysinternals_path
         self.log_func = log_func
         self.log_dir = log_dir
+        self.blacklist = blacklist
+        self.watchlist = watchlist
+
         self.threat_response = ThreatResponse(self.log_func, self.log_dir)
+        self.parser = Parser(sysinternals_path, self.log_dir, self.blacklist, self.watchlist, self.log_func)
         
         #Separated logger
         os.makedirs(self.log_dir, exist_ok=True)
@@ -55,18 +70,6 @@ class Analyzer:
 
         self.config_dir = os.path.dirname(os.path.abspath(__file__))
 
-        self.blacklist = Blacklist(self.log_dir, self.log_func)
-        self.watchlist = Watchlist(self.log_dir, self.log_func)
-
-        # # Paths to Sysinternals tools
-        self.sigcheck_exe = os.path.join(sysinternals_path, 'sigcheck.exe')
-        self.handle_exe = os.path.join(sysinternals_path, 'handle.exe')
-        self.listdlls_exe = os.path.join(sysinternals_path, 'listdlls.exe')
-        self.procdump_exe = os.path.join(sysinternals_path, 'procdump.exe')
-        self.sysmon_exe = os.path.join(sysinternals_path, 'sysmon.exe')
-        self.strings_exe = os.path.join(sysinternals_path, 'strings.exe')
-        self.sysmon_config = os.path.join(sysinternals_path, 'sysmonconfig.xml')
-
         # # Suspicious 
         self.suspicious_dlls = self.blacklist.suspicious_stuff.get("suspicious_dll", [])
         self.suspicious_process = self.blacklist.suspicious_stuff.get("suspicious_process", [])
@@ -74,680 +77,60 @@ class Analyzer:
         self.suspicious_ip = self.blacklist.suspicious_stuff.get("suspicious_ip", [])
         self.suspicious_ports = self.blacklist.suspicious_stuff.get("suspicious_port", [])
         self.exe_extensions = self.blacklist.suspicious_stuff.get("suspicious_exe_extension", [])
-        self.commands_keywords = self.blacklist.suspicious_stuff.get("suspicious_commands_keyword", [])
+        self.suspicious_commands = self.blacklist.suspicious_stuff.get("suspicious_commands", [])
         self.suspicious_cmd_args = self.blacklist.suspicious_stuff.get("suspicious_cmd_args", [])
 
         self.exclusions = self.blacklist.exclusions
-
         self.office_extensions = word + excel + ppt
-        
-        self.command_pattern_regexes = []
-        # Initialize MIME checker
-        self.mime = magic.Magic(mime=True)
-        # Load configurations
-        self.load_mime_map()
+        self.exclude_command_pattern_regexes = []
+        self.compile_command_patterns()
         self.load_scoring_config()
-
-        # Cache for tool results
-        self.cache = {}
 
     def _setup_logger(self):
         """Set up logging with DEBUG level and file handler."""
-        logger = logging.getLogger('macro_analyzer')
+        logger = logging.getLogger('analyzer')
         logger.setLevel(logging.DEBUG)
-        log_file = os.path.join(self.log_dir, f"macro_analyzer_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log")
+        log_file = os.path.join(self.log_dir, f"analyzer_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log")
         handler = logging.FileHandler(log_file)
         formatter = logging.Formatter('[%(asctime)s] [%(levelname)s] %(message)s')
         handler.setFormatter(formatter)
         logger.addHandler(handler)
         return logger
 
-    def load_mime_map(self):
-        """Load MIME type mappings from JSON file."""
-        mime_map_path = os.path.join(self.config_dir, 'mime_map.json')
-        with open(mime_map_path, 'r') as f:
-            self.mime_map = json.load(f)
-
     def compile_command_patterns(self):
-        self.command_pattern_regexes = [
+        self.exclude_command_pattern_regexes = [
             re.compile(pattern, re.IGNORECASE)
             for pattern in self.exclusions.get('command_patterns', [])
         ]
-        self.logger.debug(f"Compiled command patterns: {self.command_pattern_regexes}")
-        
+        self.logger.debug(f"Compiled command patterns: {self.exclude_command_pattern_regexes}")
 
     def load_scoring_config(self):
         """Load threat scoring configurations from JSON file."""
-        scoring_path = os.path.join(self.config_dir, 'scoring.json')
+        scoring_path = os.path.join(self.config_dir, 'scoring.json5')
         with open(scoring_path, 'r') as f:
-            self.scoring = json.load(f)
-
-    """
-    BELOW IS THE MAIN CODE
-    that handles the analysis of files, processes, and other components.
-    """
-
-    def is_office_file(self, file_path):
-        """
-        Check if the file is an Office file based on its extension.
-        Args: file_path (str): Path to the file to check.
-        How: 
-            - Get the file extension and check against known Office extensions.
-        Returns: bool
-        """
-        file_ext = os.path.splitext(file_path.lower())[1].lstrip('.')
-        return file_ext in self.office_extensions
-    
-    def is_exe_file(self, file_path):
-        """
-        Check if the file is an executable based on its extension.
-        Args: file_path (str): Path to the file to check.
-        How: 
-            - Get the file extension and check against known executable extensions.
-        Returns: bool
-        """
-        file_ext = os.path.splitext(file_path.lower())[1].lstrip('.')
-        return file_ext in self.exe_extensions
-
-    def _get_true_file_extension(self,mime_type):
-        for file_ext, mime in self.mime_map.items():
-            if mime == mime_type:
-                return file_ext
-        return ''
-
-    def validate_file_type(self, file_path):
-        """
-        Validate file type by checking if the file's actual MIME matches expected MIME(s) for its extension.
-        Args: file_path (str): Path to the file to validate.
-        How: 
-            - Get the MIME type of the file using python-magic.
-            - Get the file extension and check against the MIME map.
-                - If the MIME type matches the expected MIME(s), return True.
-                - If the MIME type does not match, return False and a category.
-                - If the file extension is not in the MIME map, return False and 'unsupported'.
-            
-        Returns: (is_valid: bool, category: str, suspicious_score: int)
-        """
-        try:
-            mime_type = self.mime.from_file(file_path)
-            file_ext = os.path.splitext(file_path.lower())[1].lstrip('.')
-            expected_mimes = self.mime_map.get(file_ext, [])
-            if not expected_mimes:
-                self.logger.warning(f"Unknown extension: {file_ext}")
-                return False, 'unknown', self.scoring.get('unknown_extension', 0)
-            if mime_type in expected_mimes:
-                if file_ext in self.office_extensions:
-                    return True, 'office', self.scoring.get('office', 10)
-                elif file_ext in self.exe_extensions:
-                    return True, 'exe', self.scoring.get('exe', 10)
-                else:
-                    return True, 'known', self.scoring.get('other', 10)
-            else:
-                #true_ext = self._get_true_file_extension(mime_type)
-                true_ext = file_ext
-                if true_ext in self.office_extensions:
-                    self.log_func(f"Got suspicious office file {file_path} with no appropriate MIME, expected {expected_mimes} got {mime_type}","WARN")
-                    return True, 'mismatched_office', self.scoring.get('mismatch_office', 20) 
-                elif true_ext in self.exe_extensions:
-                    self.log_func(f"Got suspicious EXEcutable file  {file_path} with no appropriate MIME, expected {expected_mimes} got {mime_type}","WARN")
-                    return True, 'mismatched_exe',self.scoring.get('mismatch_exe', 30) 
-
-            return False, "not_valid", 0
-        except Exception as e:
-            self.log_func(f"File type validation failed for {file_path}: {str(e)}", "ERROR")
-            return False, "not_valid" , self.scoring.get('validation_error', 10)
-
-    def run_sigcheck(self,file_path):
-        """
-        Run Sigcheck to check for digital signatures existence. Lack of confirming if it self sign or not.
-        Limited to EXE and DLL files.
-        Args: file_path (str): Path to the file to check.
-        How: 
-            - Using pefile to parse the file and check for digital signatures.
-        Returns: bool
-        """
-        try:
-            pe = pefile.PE(file_path, fast_load=True)
-            pe.parse_data_directories(directories=[pefile.DIRECTORY_ENTRY['IMAGE_DIRECTORY_ENTRY_SECURITY']])
-
-            if hasattr(pe, 'DIRECTORY_ENTRY_SECURITY'):
-                return True
-            else:
-                return False
-
-        except Exception as e:
-            self.log_func(f"Sigcheck failed for {file_path}: {str(e)}", "ERROR")
-            return False
-
-
-    def _parse_handle_output(self, output):
-        """
-        Handles the specific format of handle.exe output.
-        This version manually parses each field based on the expected positions.
-        Args:
-            output (str): Output from handle.exe.
-        Returns:
-            list: A list of JSON strings, each representing one process entry.
-        """
-        lines = output.strip().split('\n')
-        if not lines:
-            return []
-        
-        # Skip header line
-        result = []
-        
-        for line in lines[1:]:  # Skip header
-            if not line.strip():
-                continue
-            
-            # Parse the line using regex to handle the specific format
-            # Format: Process,PID,User,Handle,Type,Share Flags,Name,Access
-            
-            # Split on comma but preserve content within parentheses and quotes
-            row_pattern = r',(?=(?:[^"]*"[^"]*")*[^"]*$)'
-            parts = re.split(row_pattern, line)
-            thread_pattern = r'^([^(]+)\((\d+)\):\s*(\d+)'
-
-            thread_match = re.match(thread_pattern, parts[5].strip() if len(parts) > 5 else '')
-            
-            if len(parts) >= 4:  # Minimum required fields
-                row_dict = {
-                    'process': parts[0].strip() if len(parts) > 0 else '',
-                    'pid': parts[1].strip() if len(parts) > 1 else '',
-                    'type': parts[2].strip() if len(parts) > 2 else '',
-                    'user': parts[3].strip() if len(parts) > 3 else '',
-                    'handle': parts[4].strip() if len(parts) > 4 else '',
-                    'name': thread_match.group(1) if thread_match else '',
-                    'thread': thread_match.group(3) if thread_match else '',
-                    'thread_parent_pid': thread_match.group(2) if thread_match else '',
-                    'access': parts[6].strip() if len(parts) > 6 else '',
-                }
-                
-                # Convert PID to int if possible
-                try:
-                    if row_dict['pid']:
-                        row_dict['pid'] = int(row_dict['pid'])
-                except (ValueError, TypeError):
-                    pass
-
-                result.append(row_dict)
-
-                '''
-                # Sample ouput expected
-                {
-                    "Process": "explorer.exe",
-                    "PID": 4136,
-                    "Type": "Thread",
-                    "User": "NTUX\\null",
-                    "Handle": "0x00001ED4",
-                    "Name": "explorer.exe",
-                    "Thread": "7028",
-                    "Thread_Parent_PID": "4136",
-                    "Access": "READ_CONTROL|DELETE|SYNCHRONIZE|WRITE_DAC|WRITE_OWNER|THREAD_ALL_ACCESS"
-                }
-                '''
-        
-        return result
-
-    def check_handles(self, file_path_or_pid):
-        """Use Handle to check which processes are accessing the file.
-        Args:
-            file_path_or_pid (str): Path to the file or process or PID of the process to check.
-        How:
-            - Run handle.exe with the file path as an argument.
-            - Capture the output and parse it to extract process information.
-        Returns: tuple (bool, dict)
-
-            bool: True if any suspicious processes are found, False otherwise.
-            dict: A dictionary containing:
-                - output: Parsed output from handle.exe.
-                - suspicious_process: List of suspicious processes accessing the file.
-                - threat_score: Score based on the analysis.
-                - error: Error message if any occurred during execution.
-        """
-        results = {
-                    'handle_output': [],
-                    'handle_suspicious_process': [],
-                    'handle_suspicious_system_process': [],
-                    'threat_score': 0,
-                    }
-        is_suspicious = False
-        try:
-            
-            cmd = [self.handle_exe, "-nobanner", "-accepteula", "-a", "-u", "-v", "-g", str(file_path_or_pid)]
-            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-            output = result.stdout
-            #self.logger.info(f"Handle output for {str(file_path_or_pid)]}: {output}")
-            parsed_output = self._parse_handle_output(output)
-            results['handle_output'] = parsed_output
-
-            for handle_info in parsed_output:
-                if handle_info.get('process', '').lower() in self.suspicious_process:
-                    self.logger.warning(f"Suspicious process {handle_info['process']} accessing {str(file_path_or_pid)}")
-                    is_suspicious = True
-                    results['threat_score'] += self.scoring.get('handle_suspicious_process', 20)
-                    results['handle_suspicious_process'].append(handle_info)
-                    if handle_info.get('user', '').lower() == "nt authority\\system":
-                        self.logger.warning(f"NT AUTHORITY\\SYSTEM process {handle_info['process']} accessing {str(file_path_or_pid)}")
-                        self.log_func(f"NT AUTHORITY- SYSTEM process {handle_info['process']} accessing {str(file_path_or_pid)}" , "CRITICAL")
-                        results['threat_score'] += self.scoring.get('handle_suspicious_system_process', 30)
-                        results['handle_suspicious_system_process'].append(handle_info)
-                    self.watchlist.add_process(handle_info['pid'], handle_info)
-
-
-            return is_suspicious , results
-        except subprocess.CalledProcessError as e:
-            self.logger.error(f"Handle check failed for {str(file_path_or_pid)}: {str(e)}")
-            self.log_func(f"Handle check failed for {str(file_path_or_pid)}: {str(e)}", "ERROR")
-            return is_suspicious, results
-
-
-    def _parse_listdlls_output(self, output):
-        """Parse listdlls output and return structured data"""
-        dlls = []
-        lines = output.strip().split('\n')
-        
-        i = 0
-        while i < len(lines):
-            line = lines[i].strip()
-            
-            # Skip empty lines
-            if not line:
-                i += 1
-                continue
-            
-            # Look for DLL header line (starts with hex address)
-            dll_match = re.match(r'^(0x[0-9a-fA-F]+)\s+(0x[0-9a-fA-F]+)\s+(.+)$', line)
-            if dll_match:
-                base_address = dll_match.group(1)
-                size = dll_match.group(2)
-                path = dll_match.group(3)
-                
-                dll_info = {
-                    'base_address': base_address,
-                    'size': size,
-                    'path': path,
-                    'verified': None,
-                    'publisher': None,
-                    'description': None,
-                    'product': None,
-                    'version': None,
-                    'file_version': None,
-                    'create_time': None
-                }
-                
-                # Parse the following lines for additional properties
-                i += 1
-                while i < len(lines) and lines[i].strip():
-                    prop_line = lines[i].strip()
-                    
-                    # Parse various property lines
-                    if prop_line.startswith('Verified:'):
-                        dll_info['verified'] = prop_line.replace('Verified:', '').strip()
-                    elif prop_line.startswith('Publisher:'):
-                        dll_info['publisher'] = prop_line.replace('Publisher:', '').strip()
-                    elif prop_line.startswith('Description:'):
-                        # Handle multiple description lines by taking the first non-empty one
-                        if not dll_info['description']:
-                            desc = prop_line.replace('Description:', '').strip()
-                            if desc:
-                                dll_info['description'] = desc
-                    elif prop_line.startswith('Product:'):
-                        # Handle multiple product lines by taking the first non-empty one
-                        if not dll_info['product']:
-                            prod = prop_line.replace('Product:', '').strip()
-                            if prod:
-                                dll_info['product'] = prod
-                    elif prop_line.startswith('Version:'):
-                        dll_info['version'] = prop_line.replace('Version:', '').strip()
-                    elif prop_line.startswith('File version:'):
-                        dll_info['file_version'] = prop_line.replace('File version:', '').strip()
-                    elif prop_line.startswith('Create time:'):
-                        create_time_str = prop_line.replace('Create time:', '').strip()
-                        dll_info['create_time'] = create_time_str
-                        # Optionally parse to datetime object
-                        try:
-                            # Parse format like "Fri May 02 07:38:50 2025"
-                            dll_info['create_time_parsed'] = datetime.strptime(
-                                create_time_str, '%a %b %d %H:%M:%S %Y'
-                            ).isoformat()
-                        except ValueError:
-                            # Keep original string if parsing fails
-                            dll_info['create_time_parsed'] = create_time_str
-                    
-                    i += 1
-                
-                dlls.append(dll_info)
-            else:
-                i += 1
-        
-        return dlls
-    
-    def analyze_dlls(self, pid):
-        """Analyze DLLs loaded by a process for suspicious behavior.
-        Args:
-            pid (int): Process ID to analyze.
-        How:
-            - Run listdlls.exe with the PID as an argument.
-            - Capture the output and parse it to extract DLL information.
-            - Check each DLL against known suspicious DLLs and system paths or unsigned.
-
-        Returns: tuple (bool, dict)
-            bool: True if any suspicious DLLs are found, False otherwise.
-            dict: A dictionary containing:
-                - output: Parsed output from listdlls.exe.
-                - suspicious_dlls: List of suspicious DLLs found.
-                - process_info: Information about the process being analyzed.
-                - error: Error message if any occurred during execution.
-                - threat_score: Score based on the analysis findings.
-        
-        """
-        results = {
-            'listdlls_output': [],
-            'suspicious_dlls': [],
-            'threat_score': 0
-        }
-        is_suspicious = False
-
-        try:
-            # proc = psutil.Process(pid)
-            # proc_name = proc.name().lower()
-            # proc_path = proc.exe()
-            # parent = proc.parent()
-            # parent_name = parent.name().lower() if parent else 'unknown'
-
-            # results['process_info'] = {
-            #     'pid': pid,
-            #     'name': proc_name,
-            #     'path': proc_path,
-            #     'parent': parent_name,
-            #     'parent_pid': proc.ppid(),
-            # }
-
-            # if proc_name in self.suspicious_process or parent_name in self.office_processes:
-            #     self.logger.warning(f"Suspicious process context: {proc_name} (parent: {parent_name})")
-            #     is_suspicious = True
-
-            cmd = [self.listdlls_exe, '-accepteula', '-u', '-nobanner', str(pid)]
-            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-            output = result.stdout
-            parsed_output = self._parse_listdlls_output(output)
-
-            # """
-            # # Sample output expected
-            # 0x00000000b6640000  0x27000   C:\Path\to\suspicious.dll
-            #                 Verified:       Unsigned
-            #                 Publisher:      Microsoft Corporation
-            #                 Description:    Xxxx
-            #                 Product:        Xxxx
-            #                 Description:    Xxxx
-            #                 Product:        Xxxx
-            #                 Product:        Xxxx
-            #                 Version:        10.0.1566.19041
-            #                 File version:   10.0.1.19041
-            #                 Create time:    Fri May 02 07:38:50 2025
-            # """
-
-            results['listdlls_output'] = parsed_output
-            dlls = parsed_output
-
-            system_paths = [os.path.normpath(os.path.join(os.environ.get('SystemRoot', 'C:\\Windows'), p)).lower()
-                            for p in ['System32', 'SysWOW64']]
-
-            for dll in dlls:
-                dll_path = dll['path']
-                dll_name = os.path.basename(dll_path).lower()
-                if dll_name in self.suspicious_dlls:
-                    self.logger.warning(f"Suspicious DLL name: {dll_name}")
-                    dll['is_suspicious'] = True
-                    is_suspicious = True
-                    results['suspicious_dlls'].append(dll)
-                    results['threat_score'] += self.scoring.get('suspicious_dll', 20)
-
-
-                dll_dir = os.path.normpath(os.path.dirname(dll_path)).lower()
-                if not any(dll_dir.startswith(sys_path) for sys_path in system_paths):
-                    self.logger.warning(f"DLL from non-system path: {dll_path}")
-                    dll['is_suspicious'] = True
-                    dll['reason'] = 'Non-system path'
-                    is_suspicious = True
-                    results['suspicious_dlls'].append(dll)
-                    results['threat_score'] += self.scoring.get('non_system_dll', 20)
-
-                if dll.get('verified').lower() == 'unsigned':
-                    self.logger.warning(f"Unsigned DLL: {dll_path}")
-                    dll['is_suspicious'] = True
-                    dll['reason'] = 'Unsigned'
-                    is_suspicious = True
-                    results['suspicious_dlls'].append(dll)
-                    results['threat_score'] += self.scoring.get('unsigned_dll', 30)
-
-            return is_suspicious, results
-
-        except Exception as e:
-            self.logger.error(f"Error analyzing DLLs for PID {pid}: {str(e)}")
-            self.log_func(f"Error analyzing DLLs for PID {pid}: {str(e)}", "ERROR")
-            return is_suspicious, results
-
-    def check_sysmon_events(self, file_path):
-        """Check Sysmon logs for events related to the file."""
-        try:
-
-            # #cmd = ['wevtutil', 'qe', 'Microsoft-Windows-Sysmon/Operational', '/q:*[System[(EventID=1)]]', '/c:10', '/rd:true', '/f:xml']
-            # #result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-            # xml_output = ""#result.stdout
-            # root = ET.fromstring(f"<Events>{xml_output}</Events>")
-            # for event in root.findall('.//Event'):
-            #     data = event.findall('.//Data')
-            #     for d in data:
-            #         if d.get('Name') == 'Image' and file_path.lower() in d.text.lower():
-            #             self.logger.warning(f"Sysmon event detected for {file_path}: {ET.tostring(event, encoding='unicode')}")
-            #             return True, ET.tostring(event, encoding='unicode')
-            # self.logger.info(f"Sysmon event check {results}")
-
-            return False, "No Sysmon events found"
-        except (subprocess.CalledProcessError, ET.ParseError) as e:
-            self.logger.error(f"Sysmon event check failed: {str(e)}")
-            self.log_func(f"Sysmon event check failed: {str(e)}", "ERROR")
-            return False, str(e)
-
-    def get_process_info(self, pid):
-        """Get process information using psutil."""
-        try:
-            proc = psutil.Process(pid)
-            proc_info = {
-                'pid': proc.pid,
-                'parent_pid': proc.ppid(),
-                'parent_name': proc.parent().name().lower() if proc.parent() else None,
-                'username': proc.username(),
-                'cwd': proc.cwd(),
-                'open_files': [f.path for f in proc.open_files()],
-                'connections': [conn.laddr for conn in proc.connections(kind='inet')],
-                'name': proc.name(),
-                'exe': proc.exe(),
-                'cmdline': proc.cmdline(),
-                'status': proc.status(),
-                'create_time': datetime.fromtimestamp(proc.create_time()).isoformat()
-            }
-            return proc_info
-        except psutil.NoSuchProcess:
-            self.logger.error(f"Process with PID {pid} does not exist.")
-            self.log_func(f"Process with PID {pid} does not exist.", "ERROR")
-            return None
-
-    def _analyse_olevba_results(self, vba_analyse_results):
-
-        results = {
-            'keywords': [],
-            'threat_score': 0,
-            'autoexec': False,
-            'ioc': False,
-            'vba_obfuscated': False
-        }
-
-        for kw_type, keyword, description in vba_analyse_results:
-            # types 'AutoExec', 'Suspicious', 'IOC'
-            # https://github.com/decalage2/oletools/blob/master/oletools/olevba.py#L2594
-            if kw_type == 'Suspicious':
-                is_suspicious = True
-                results["keywords"].append(f"{keyword}: suspicious@{description}")
-                results['threat_score'] += self.scoring.get('suspicious_keyword', 10)
-
-            if 'obfuscate' in description.lower():
-                results['vba_obfuscated'] = True
-                results["keywords"].append(f"{keyword}: vba_obfuscated@{description}")
-                results['threat_score'] += self.scoring.get('vba_obfuscated', 30)
-                
-            if kw_type == 'AutoExec':
-                results["keywords"].append(f"{keyword}: autoexec@{description}")
-                is_suspicious = True
-                results['autoexec'] = True
-                results['threat_score'] += self.scoring.get('autoexec', 30)
-            
-            if kw_type == 'IOC':
-                is_suspicious = True
-                results['ioc'] = True
-                if "ip" in description.lower():
-                    results["keywords"].append(f"{keyword}: ip@{description}")
-                    self.log_func(f"Suspicious IP detected in macro: {description}", "CRITICAL")
-                elif "url" in description.lower():
-                    results["keywords"].append(f"{keyword}: url@{description}")
-                    self.log_func(f"Suspicious URL detected in macro: {description}", "CRITICAL")
-                elif "executable file" in description.lower():
-                    results["keywords"].append(f"{keyword}: executable@{description}")
-                    self.log_func(f"Suspicious executable file detected in macro: {description}", "CRITICAL")
-                else:
-                    results["keywords"].append(f"{keyword}: ioc@{description}")
-                    self.log_func(f"Suspicious IOC detected in macro: {description}", "CRITICAL")
-                results['threat_score'] += self.scoring.get('ioc', 40)     
-            
-            if "command" in description.lower():
-                results["keywords"].append(f"{keyword}: command@{description}")
-                is_suspicious = True
-                results['threat_score'] += self.scoring.get('command', 20)
-
-        return results         
-
-    def analyze_macros(self, file_path):
-
-        """Analyze macros in Office files using oletools (olevba).
-        Args:
-            file_path (str): Path to the Office file to analyze.
-        How:
-            - Use VBA_Parser from olevba to extract macros.
-            - Check for DDE links (https://www.wired.com/story/russia-fancy-bear-hackers-microsoft-office-flaw-and-nyc-terrorism-fears/)
-            - And analyze macros for suspicious keywords. 
-        Returns: dict
-            - macros: List of macros found in the file.
-            - dde: List of DDE links found in the file.
-            - keywords: Dictionary of keywords found in the macros.
-            - errors: List of errors encountered during analysis.
-            - threat_score: Total threat score based on findings.
-            - is_suspicious: True if any suspicious activity is detected.
-            - has_macros: True if macros are present in the file.
-            - ioc: True if any IOCs are detected.
-            - vba_obfuscated: True if any obfuscated VBA code is detected.
-            - autoexec: True if any AutoExec macros are detected.
-
-        """
-        results = {
-            'macros':[],
-            'dde': [],
-            'threat_score': 0,
-            'has_macros': False,
-            'ioc': False,
-            'vba_obfuscated': False,
-            'autoexec': False
-        }
-        is_suspicious = False
-        threat_score = 0
-        try:
-            self.logger.debug(f"Starting macro analysis for {file_path}")
-            try:
-                vba_parser = VBA_Parser(filename=file_path)
-            except Exception as e:
-                self.logger.error(f"Failed to initialize VBA parser for {file_path}: {str(e)}")
-                self.log_func(f"Failed to initialize VBA parser for {file_path}: {str(e)}", "ERROR")
-                return is_suspicious, results
-
-
-            if not vba_parser.detect_vba_macros():
-                self.logger.info(f"No macros found in {file_path}")
-                vba_parser.close()
-                return is_suspicious, results
-                
-            results['has_macros'] = True
-          
-            try:
-                dde_results = extract_dde(file_path)
-                if dde_results:
-                    self.logger.warning(f"DDE links detected in {file_path}: {dde_results}")
-                    results['dde'] = dde_results
-                    is_suspicious = True
-                    threat_score += self.scoring.get('dde_link', 20)
-            except Exception as e:
-                self.logger.error(f"DDE analysis failed for {file_path}: {str(e)}")
-                self.log_func(f"DDE analysis failed for {file_path}: {str(e)}", "ERROR")
-
-            try:
-                for (filename, stream_path, vba_filename, vba_code) in vba_parser.extract_macros():
-                    macro_entry = {
-                        'filename': filename,
-                        'stream_path': stream_path,
-                        'vba_filename': vba_filename,
-                        'macros': vba_code,
-                    }
-                    results['macros'].append(macro_entry)
-
-                vba_analyse_results = vba_parser.analyze_macros()
-                olevba_analyse_results = self._analyse_olevba_results(vba_analyse_results)
-                threat_score += olevba_analyse_results['threat_score']
-                results.update(olevba_analyse_results)
-                results['threat_score'] =  threat_score
-
-            except Exception as e:
-                self.logger.error(f"Macro scanning failed for {file_path}: {str(e)}")
-                self.log_func(f"Macro scanning failed for {file_path}: {str(e)}", "ERROR")
-
-            vba_parser.close()
-            return is_suspicious, results
-
-        except Exception as e:
-            self.logger.error(f"Unexpected error in macro analysis for {file_path}: {str(e)}")
-            self.log_func(f"Unexpected error in macro analysis for {file_path}: {str(e)}", "ERROR")
-            return is_suspicious, results
-
-
-    async def deobfuscate_macros(self, file_path):
-        """Deobfuscate macros in Office files
-        """
-        results = {
-            'deobfuscated_macro': {},
-        }
-        try:
-            self.logger.info(f"Begin deobfuscate {file_path}")
-
-            output_file = os.path.join(self.log_dir, f"Deofuscated_{os.path.basename(file_path)}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt")
-            content = deobfuscator(file_path)
-
-            with open(output_file, 'w') as f:
-                f.write(content)
-
-            vba_analyse_results =  VBA_Scanner(content).scan(include_decoded_strings = True)
-            olevba_analyse_results = self._analyse_olevba_results(vba_analyse_results)
-            results['deobfuscated_macro'] = content
-            results.update(olevba_analyse_results)
-
-            return True, results
-        except Exception as e:
-            self.logger.error(f"Deobfuscation failed for {file_path}: {str(e)}")
-            self.log_func(f"Deobfuscation failed for {file_path}: {str(e)}", "ERROR")
-            return False, results
-
+            self.scoring = json5.load(f)
 
     """
     Anlyzing part of the file
+    Handle the correlations and add to watch list the suspicious stuff
+    Like: ip, file, process ...
     """
+
+    def _analyzing_dlls(self, pid):
+        proc_info = psutil.Process(pid)
+        threat_score = 0
+        dll_results ={}
+        if proc_info:
+            has_suspicious_dll, dll_results = self.parser.check_dlls(proc_info.pid)
+            if has_suspicious_dll:
+                for dll in dll_results.get('suspicious_dlls', []):
+                    self.watchlist.add_process(proc_info.pid, dll)
+                    self.logger.info(f"Sus process {proc_info.pid} is accessing suspicious DLL: {dll['path']}")
+                    self.log_func(f"Sus process {proc_info.pid} is accessing suspicious DLL: {dll['path']}", "CRITICAL")
+                    threat_score += self.scoring.get('suspicious_dll_with_suspicious_processs', 40) 
+
+        return dll_results, threat_score
+
 
     async def analyze_office(self, file_path):
         """Analyze Office files and summarize findings.
@@ -755,10 +138,8 @@ class Analyzer:
             file_path (str): Path to the Office file to analyze.
         How:
             - Check if the file is an Office file.
-            - Validate the file type and MIME type.
-            - Analyze macros for suspicious behavior.
-            - Check for handles and DLLs loaded by Office processes.
-            - Deobfuscate macros if present.
+            - Check for suspicious macros.
+            - Check DLLs loaded by Office processes.
         Returns: dict 
         """
     
@@ -773,108 +154,75 @@ class Analyzer:
         }
         is_suspicious = False
         threat_score = 0
+
         try:
-            is_valid, file_type, type_score = self.validate_file_type(file_path)
+            is_valid, file_type, type_score = self.parser.validate_file_type(file_path)
             threat_score += type_score
             if not is_valid:
                 self.logger.info(f"Invalid file type for {file_path}: {file_type}")
                 self.log_func(f"Invalid file type for {file_path}: {file_type}", "ERROR")
-                return results
+                return is_suspicious, results
 
-            self.log_func(f"Analyzing Office file {file_path}ignore due to in exclusion folder","INFO")
             self.logger.info(f"Analyzing Office file: {file_path}")
-            # Check file location
-            file_dir = os.path.normpath(os.path.dirname(file_path)).lower()
 
-            has_suspicious_macro, macro_results = self.analyze_macros(file_path)
+            has_suspicious_macro, macro_results = self.parser.check_macros(file_path)
             threat_score += macro_results.get('threat_score', 0)
             results.update(macro_results)
 
-            # Deobfuscate macros if present
-            if macro_results.get('has_macros', False) and macro_results.get('vba_obfuscated', False):
-                deobufus_await = await self.deobfuscate_macros(file_path)
-                has_deobfuscated, deobfuscation_results = deobufus_await
-                results.update(deobfuscation_results)
-
-            has_suspicious_handle, handle_output = self.check_handles(file_path)
+            has_suspicious_handle, handle_output = self.parser.check_handles(file_path)
             threat_score += handle_output.get('threat_score', 0)
             results.update(handle_output)
+
             #has_sysmon_event, sysmon_output = self.check_sysmon_events(file_path)
-            
             # results['threat_score'] += sysmon_output.get('threat_score', 0)
-
-            # self.logger.debug(f"Macro analysis results: {macro_results}")
-            # self.logger.debug(f"Handle output: {handle_output}")
-            # self.logger.debug(f"Sysmon output: {sysmon_output}")
-            self.threat_response.export_analysis_results(file_path, results)
-            """
-          
-            """
-
-            #results['sysmon'] = sysmon_output
-
-           
-
+            # results.update(sysmon_output)
+            
+            # self.logger.debug(f"Macro analysis results: {results}")
 
             # Analyze deeper if suspicious macros are found
             """
+            Check correlations 
             How:
-                - Check if the file is accessed by any suspicious processes.
-                - If so , analyse it handles for suspicious processes running it. Like Explorer.exe
-                - If any suspicious processes are found, analyze their DLLs for further threats.
+                - If any suspicious processes in Handle are found, analyze their DLLs for further threats.
+                - Check in current watchlist 
             """
-            if macro_results.get('has_macros', False) and has_suspicious_macro:
-                if len(handle_output.get('suspicious_process', [])) > 0:
-                    
-                    for handle_info in handle_output.get('suspicious_system_process', []):
-                        self.logger.info(f"File {file_path} is accessed by SYSTEM suspicious process {handle_info['Process']}")
-                        self.log_func(f"File {file_path} is accessed by SYSTEM suspicious process {handle_info['Process']}", "CRITICAL")
-                        self._analyzing_dlls(handle_info)
 
-                    for handle_info in handle_output.get('suspicious_process', []):
-                        self.logger.info(f"File {file_path} is accessed by suspicious process {handle_info['Process']}")
-                        self._analyzing_dlls(handle_info)
-                           
-                    if results['threat_score'] >= 70:
-                        for key in results['keywords']:
-                            if key in self.watchlist.watchlist_keywords:
-                                # Track existing keywords for uniqueness
-                                existing_keywords = {tup[0] for tup in self.in_monitor_keywords[key]}
-                                for tup in keywords[key]:
-                                    # Ensure tup is a valid tuple with two elements
-                                    if isinstance(tup, tuple) and len(tup) == 2 and tup[0] not in existing_keywords:
-                                        self.in_monitor_keywords[key].append(tup)
-                                        existing_keywords.add(tup[0])
-                        self.analyse_keywords()
-                        for proc in psutil.process_iter(['pid', 'name']):
-                            if proc.name().lower() in ['winword.exe', 'excel.exe', 'powerpnt.exe']:
-                                self.threat_response.terminate_process(proc.pid)
-                                self.threat_response.quarantine_file(file_path)
-                                self.threat_response.export_analysis_results(file_path, results)
+             # Check dlls
+            has_suspicious_dll, dll_results = self.parser.check_dlls(file_path)
+            threat_score += dll_results.get('threat_score', 0)
+            results.update(dll_results)
+            if has_suspicious_dll:
+                for dll in dll_results.get('suspicious_dlls', []):
+                    self.watchlist.add_process(proc_info.pid, dll)
+                    self.logger.info(f"Process {proc_info.pid} is accessing suspicious DLL: {dll['path']}")
+                    self.log_func(f"Process {proc_info.pid} is accessing suspicious DLL: {dll['path']}", "CRITICAL")
+                    threat_score += self.scoring.get('suspicious_dll', 30)
 
-            # results['threat_score'] = threat_score           
-            return results
+
+            if macro_results.get('has_macros', False) or has_suspicious_macro: 
+                # Check Handle exist then file is being used ;
+                # Can only check parent proc - not that useful
+                # if the file is accessed by any suspicious processes, then  further analyze their dlls
+                for handle_info in handle_output.get('suspicious_system_process', []):
+                    self.logger.info(f"File {file_path} is accessed by SYSTEM suspicious process {handle_info['Process']}")
+                    self.log_func(f"File {file_path} is accessed by SYSTEM suspicious process {handle_info['Process']}", "CRITICAL")
+                    dlls_results , dll_score = self._analyzing_dlls(handle_info)
+                    threat_score += dll_score 
+                    results.update(dlls_results)
+
+                for handle_info in handle_output.get('suspicious_process', []):
+                    self.logger.info(f"File {file_path} is accessed by suspicious process {handle_info['Process']}")
+                    dlls_results , dll_score = self._analyzing_dlls(handle_info)
+                    threat_score += dll_score 
+                    results.update(dlls_results)
+                #########
+            results['threat_score'] = threat_score     # if suspicious / mostly will > 70      
+            return is_suspicious, results
 
         except Exception as e:
             self.logger.error(f"Unexpected error analyzing Office file {file_path}: {str(e)}")
             self.log_func(f"Unexpected error analyzing Office file {file_path}: {str(e)}", "ERROR")
-            return results
-
-    def _analyzing_dlls(self, handle_info):
-        current_pid = handle_info['pid']
-        self.watchlist.add_process(current_pid, handle_info)
-        proc_info = self.get_process_info(current_pid)
-        if proc_info:
-            has_suspicious_dll, dll_results = self.analyze_dlls(proc_info['pid'])
-            if has_suspicious_dll:
-                for dll in dll_results.get('suspicious_dlls', []):
-                    self.watchlist.add_process(proc_info['pid'], dll)
-
-                    self.logger.info(f"Process {proc_info['pid']} is accessing suspicious DLL: {dll['path']}")
-                    self.log_func(f"Process {proc_info['pid']} is accessing suspicious DLL: {dll['path']}", "CRITICAL")
-                    return self.scoring.get('suspicious_dll_with_suspicious_processs', 40) 
-        return 0     
-
+            return is_suspicious, results
 
     async def analyze_exe(self, file_path):
         """Analyze executable files for suspicious behavior.
@@ -882,8 +230,9 @@ class Analyzer:
             file_path (str): Path to the executable file to analyze.
         How:
             - Check file properties (e.g., signature, path).
-            - Analyze process handles and DLLs.
-            - Check for suspicious behavior or indicators of compromise.
+            - Check dlls loaded
+            - Check handles for suspicious file it run , then check their dlls
+            - Check for connections to the internet.
         """
         results = {
             'sigcheck': {},
@@ -898,7 +247,7 @@ class Analyzer:
         is_suspicious = False
         threat_score = 0
         try:
-            is_valid, file_type, type_score = self.validate_file_type(file_path)
+            is_valid, file_type, type_score = self.parser.validate_file_type(file_path)
             threat_score += type_score
             if not is_valid:
                 self.logger.info(f"Invalid file type for {file_path}: {file_type}")
@@ -909,127 +258,205 @@ class Analyzer:
 
             # Check file location
             file_dir = os.path.normpath(os.path.dirname(file_path)).lower()
-
             system_paths = [os.path.normpath(os.path.join(os.environ.get('SystemRoot', 'C:\\Windows'), p)).lower()
                             for p in ['System32', 'SysWOW64', 'Program Files', 'Program Files (x86)']]
-
             temp_paths = [os.path.normpath(os.path.expandvars(p)).lower() for p in ['%TEMP%', '%APPDATA%']]
             # Check if the file is in a non-standard path
             if not any(file_dir.startswith(sys_path) for sys_path in system_paths):
                 self.logger.warning(f"EXE in non-standard path: {file_path}")
                 threat_score += self.scoring.get('non_standard_path_exe', 10)
-                if any(file_dir.startswith(temp_path) for temp_path in temp_paths):
-                    self.logger.warning(f"EXE in temporary directory: {file_path}")
-                    threat_score += self.scoring.get('temp_directory_exe', 20)
-                    is_suspicious = True
+                is_suspicious = True
+
+            if any(file_dir.startswith(temp_path) for temp_path in temp_paths):
+                self.logger.warning(f"EXE in temporary directory: {file_path}")
+                threat_score += self.scoring.get('temp_directory_exe', 20)
+                is_suspicious = True
 
             # Run sigcheck
-            has_signature = self.run_sigcheck(file_path)
+            has_signature = self.parser.check_sig(file_path)
             results['sigcheck'] = has_signature
             if not has_signature:
                 self.logger.warning(f"Unsigned EXE: {file_path}")
                 is_suspicious = True
+                threat_score += self.scoring.get('unsigned_file', 20)
 
+            # Check handles and dlls
+            has_suspicious_handle, handle_output = self.parser.check_handles(file_path)
+            threat_score += handle_output.get('threat_score', 0)
+            results.update(handle_output)
 
-            # Check handles
-            has_suspicious_handle, handle_output = self.check_handles(file_path)
-            results['handles'] = handle_output
-            print("XXXXXXXX",handle_output)
-            if has_suspicious_handle:
+            if has_suspicious_handle: # then the file is being used by some process and in watchlist
                 for handle_info in handle_output.get('suspicious_process', []):
                     self.logger.info(f"File {file_path} is accessed by suspicious process {handle_info['process']}")
-                    #self._analyzing_dlls(handle_info)
-                    print(handle_info)
+                    dlls_results , dll_score = self._analyzing_dlls(handle_info['pid'])
+                    threat_score += dll_score 
+                    results.update(dlls_results)
 
                 for handle_info in handle_output.get('suspicious_system_process', []):
                     self.logger.info(f"File {file_path} is accessed by SYSTEM suspicious process {handle_info['process']}")
                     self.log_func(f"File {file_path} is accessed by SYSTEM suspicious process {handle_info['process']}", "CRITICAL")
-                    self._analyzing_dlls(handle_info)
+                    dlls_results , dll_score = self._analyzing_dlls(handle_info['pid'])
+                    threat_score += dll_score 
+                    results.update(dlls_results)
 
             # Check Sysmon events
-            has_sysmon_event, sysmon_output = self.check_sysmon_events(file_path)
-            results['sysmon'] = sysmon_output
-            if has_sysmon_event:
-                self.logger.warning(f"Sysmon event detected for {file_path}")
-                is_suspicious = True
-                threat_score += self.scoring.get('sysmon_event_exe', 10)
-            #results['threat_score'] = threat_score
+            # has_sysmon_event, sysmon_output = self.parser.check_sysmon_events(file_path)
+            # results['sysmon'] = sysmon_output
+            # if has_sysmon_event:
+            #     self.logger.warning(f"Sysmon event detected for {file_path}")
+            #     is_suspicious = True
+            #     threat_score += self.scoring.get('sysmon_event_exe', 10)
+
+            results['threat_score'] = threat_score
             return is_suspicious, results
 
         except Exception as e:
             self.logger.error(f"Unexpected error analyzing EXE {file_path}: {str(e)}")
             self.log_func(f"Unexpected error analyzing EXE {file_path}: {str(e)}", "ERROR")
             return is_suspicious, results
-    
-    async def analysis_process(self, pid):
+
+    def is_ip_suspicious(self, ip, port):
+        if ip in self.exclusions.get('ip', []) or port in self.exclusions.get('ports', []):
+            self.logger.info(f"IP {ip} or port {port} is in exclusion list, skipping analysis")
+            self.log_func(f"IP {ip} or port {port} is in exclusion list, skipping analysis", "IGNORED")
+            return False
+        if ip in self.suspicious_ip or port in self.suspicious_ports or ip in self.watchlist.watchlist_ip:
+            self.log_func(f"Process {proc_name}-{pid} has suspicious connection to {raddr} on port {conn.raddr.port}", "CRITICAL")
+            self.logger.critical(f"Process {proc_name}-{pid} has suspicious connection to {raddr} on port {conn.raddr.port}")
+            return True
+        return False
+
+    async def analysis_process(self, pid, is_child=False):
         """Analyze a process for suspicious behavior."""
         results = {
-            'dlls': [],
+            'suspiscious_ip': [],
+            'suspicious_ports': [],
+            'connect_to_inet':[],
             'threat_score': 0,
             'is_dangerous': False,
         }
         is_suspicious = False
-
+        threat_score = 0
         try:
-            self.logger.info(f"Analyzing process: {pid}")
-            has_suspicious_handle, handle_output = self.check_handles(pid)
-            for handle_info in handle_output.get('suspicious_process', []):
-                self.logger.info(f"Process {pid} is accessed by suspicious process {handle_info['Process']}")
-                self._analyzing_dlls(handle_info)
-            for handle_info in handle_output.get('suspicious_system_process', []):
-                self.logger.info(f"Process {pid} is accessed by SYSTEM suspicious process {handle_info['Process']}")
-                self.log_func(f"Process {pid} is accessed by SYSTEM suspicious process {handle_info['Process']}", "CRITICAL")
-                self._analyzing_dlls(handle_info)
+            self.logger.info(f"Analyzing process with PID: {pid}")
+            # Check if process connect to internet and is suspicious
+            proc = psutil.Process(pid)
+            if not proc.is_running():
+                self.logger.info(f"Process {pid} is not running, skipping analysis")
+                self.log_func(f"Process {pid} is not running, skipping analysis", "IGNORED")
+                return is_suspicious, results
+            proc_name = proc['name'].lower()
+
+            if proc_name in self.exclusions.get('processes', []):
+                self.logger.info(f"Process {proc_name}-{pid} is in exclusion list, skipping analysis")
+                self.log_func(f"Process {proc_name}-{pid} is in exclusion list, skipping analysis", "IGNORED")
+                return is_suspicious, results
+
+            exe_path = proc.exe()
+            if any(exe_path.lower().startswith(folder.lower()) for folder in self.analyzer.exclusions.get('folders', [])):
+                #self._log(f"Skipping process in excluded folder: {exe_path} (PID: {pid})", "DEBUG")
+                return is_suspicious, results
             
-            return results
+            cmdline =  ' '.join(proc_info['cmdline']) if proc_info['cmdline'] else ''
+           
+            if cmdline and any(re.search(pattern, cmdline[0], re.IGNORECASE) for pattern in self.exclude_command_pattern_regexes):
+                self.logger.info(f"Process {proc_name}-{pid} command line matches exclusion patterns, skipping analysis")
+                self.log_func(f"Process {proc_name}-{pid} command line matches exclusion patterns, skipping analysis", "IGNORED")
+                return is_suspicious, results
+
+            user = proc.username()
+            connections = proc.connections(kind='inet')
+            conn_info_list = []
+            for conn in connections:
+                laddr = f"{conn.laddr.ip}:{conn.laddr.port}" if conn.laddr else "N/A"
+                raddr = f"{conn.raddr.ip}:{conn.raddr.port}" if conn.raddr else "N/A"
+                # conn_info = {
+                #     'status': conn.status,
+                #     'local_address': laddr,
+                #     'remote_address': raddr,
+                #     'family': socket.AddressFamily(conn.family).name,
+                #     'type': socket.SocketKind(conn.type).name
+                # }
+                if is_ip_suspicious(raddr, conn.raddr.port):
+                    is_suspicious = True
+                    threat_score += self.scoring.get('suspicious_connection', 30)
+                    results['suspiscious_ip'].append(raddr)
+                    results['suspicious_ports'].append(conn.raddr.port)
+                
+                if is_ip_suspicious(conn.laddr.ip, conn.laddr.port):
+                    is_suspicious = True
+                    threat_score += self.scoring.get('suspicious_connection', 30)
+                    results['suspiscious_ip'].append(conn.laddr.ip)
+                    results['suspicious_ports'].append(conn.laddr.port)
+            
+
+                      
+            self.log_func(f"Process {proc_name}-{pid} is running cmd: {cmdline}","WARN")
+            if len(connections) > 0:
+                for cmd in self.suspicious_commands:
+                    if cmd in cmdline:
+                        is_suspicious = True
+                        self.log_func(f"Process {proc_name}-{pid} is running cmd: {cmd}","WARN")
+                        self.logger.warn(f"Process {proc_name}-{pid} is running cmd: {cmd}")
+                for arg in self.suspicious_cmd_args :
+                    if arg in cmdline:
+                        self.log_func(f"Process {proc_name}-{pid} is running with suspicious arg: {arg}","WARN")
+                        self.logger.warn(f"Process {proc_name}-{pid} is running with suspicious arg: {arg}")
+            # # Child Processes
+            # child_processes = []
+            # if  is_child == False:
+            #     try:
+            #         children = proc_info.children(recursive=True)
+            #         for child in children:
+            #             x = await self.analyze_process(child.pid, is_child = True)
+            #             is_suspicious, results = x
+            #             child_processes.append(results)
+            #     except:
+            #         child_processes = [{'error': 'Unable to access child processes'}]
+
+            has_suspicious_handle, handle_output = self.check_handles(pid)
+            threat_score += handle_output.get('threat_score',0)
+            results.update(handle_output)
+            if has_suspicious_handle:
+                for handle_info in handle_output.get('suspicious_process', []):
+                    self.logger.info(f"Process {pid} is accessed by suspicious process {handle_info['Process']}")
+                    dlls_results , dll_score = self._analyzing_dlls(handle_info)
+                    threat_score += dll_score 
+                    results.update(dlls_results)
+
+                for handle_info in handle_output.get('suspicious_system_process', []):
+                    self.logger.info(f"Process {pid} is accessed by SYSTEM suspicious process {handle_info['Process']}")
+                    self.log_func(f"Process {pid} is accessed by SYSTEM suspicious process {handle_info['Process']}", "CRITICAL")
+                    dlls_results , dll_score = self._analyzing_dlls(handle_info)
+                    threat_score += dll_score 
+                    results.update(dlls_results)
+
+            results['threat_score'] = threat_score
+            #results['child_processes'] = child_processes
+            return is_suspicious, results
 
         except Exception as e:
             self.logger.error(f"Unexpected error analyzing process {pid}: {str(e)}")
             self.log_func(f"Unexpected error analyzing process {pid}: {str(e)}", "ERROR")
+            return is_suspicious, results
 
-    async def hash_file_md5(self, file_path):
-        """
-        Calculate MD5 hash of a file.
-        
-        Args:
-            file_path (str): Path to the file to be hashed
-            
-        Returns:
-            str: Hexadecimal MD5 hash of the file
-            
-        Raises:
-            FileNotFoundError: If the file doesn't exist
-            IOError: If there's an error reading the file
-        """
-        md5_hash = hashlib.md5()
-        
-        try:
-            with open(file_path, 'rb') as file:
-                # Read file in chunks to handle large files efficiently
-                for chunk in iter(lambda: file.read(4096), b''):
-                    md5_hash.update(chunk)
-            return md5_hash.hexdigest()
-        except FileNotFoundError:
-            raise FileNotFoundError(f"File not found: {file_path}")
-        except IOError as e:
-            raise IOError(f"Error reading file {file_path}: {str(e)}")
-
-    async def main_analyze_r(self, file_path):
+    async def analyze_file(self, file_path):
         """Analyze file and take appropriate actions based on threat score."""
         results ={}
         threat_score = 0
+        is_suspicious = False
         try:
             if any(file_path.startswith(folder) for folder in self.exclusions['folders']):
                 self.log_func(f"File {file_path} ignore due to in exclusion folder","IGNORED")
                 return 
             
             # Hash to check if already checked
-            file_hash = await self.hash_file_md5(file_path)
-            if file_hash in list(my_dict.keys()):
+            file_hash = self.parser.hash_file_md5(file_path)
+            if file_hash in list(self.watchlist.watchlist_file.keys()):
                 self.log_func(f"File {file_path} already analyzed, skipping", "IGNORED")
                 return
             
-            is_valid, file_type, type_score = self.validate_file_type(file_path)
+            is_valid, file_type, type_score = self.parser.validate_file_type(file_path)
             threat_score += type_score
             print(f"File type: {file_type}")
             
@@ -1037,22 +464,16 @@ class Analyzer:
                 self.log_func(f"File type not Valid: {file_path} - type:{file_type}", "IGNORED")
                 return
 
-            if "office" in file_type:
-                if "mismatch" in file_type:
-                    self.log_func(f"Office file that have mismatch MIME created: {file_path}", "WARN")
-                else:
-                    self.log_func(f"Office file created: {file_path}", "INFO")
-                    
-                has_suspicious, analyze_office_results = await self.analyze_office(file_path)
+            if "office" in file_type:    
+                res = await self.analyze_office(file_path)
+                has_suspicious, analyze_office_results = res
+                is_suspicious = has_suspicious
                 results.update(analyze_office_results)
                 threat_score += analyze_office_results.get('threat_score', 0)
             elif "exe" in file_type:
-                if "mismatch" in file_type:
-                    self.log_func(f"EXEcutable with mismatch MIME created: {file_path}", "WARN")
-                else:
-                    self.log_func(f"EXEcutable created: {file_path}", "WARN")
-
-                has_suspicious, analyze_exe_results = await self.analyze_exe(file_path)
+                res = await self.analyze_exe(file_path)
+                has_suspicious, analyze_exe_results = res
+                is_suspicious = has_suspicious
                 results.update(analyze_exe_results)
                 threat_score += analyze_exe_results.get('threat_score', 0)
             else:
@@ -1060,12 +481,62 @@ class Analyzer:
                 return
             
             results['threat_score'] = threat_score
-            self.watchlist.add_file(file_hash, file_path, results)
-
             if threat_score >= 70:
                 self.log_func(f"File {file_path} is dangerous (Score: {threat_score})", "CRITICAL")
+                self.watchlist.add_file(file_hash, file_path, results)
             else:
                 self.log_func(f"File {file_path} deemed safe (Score: {threat_score})", "INFO")
+            return is_suspicious, results
+
+        except PermissionError as e:
+            return is_suspicious, results
+        except FileNotFoundError as e:
+            return is_suspicious, results
         except Exception as e:
             self.log_func(f"Analysis failed for {file_path}: {str(e)}", "ERROR")
-            print(f"Analysis failed for {file_path}: {str(e)}")
+            return is_suspicious, results
+
+    def _is_encoded_payload(self, payload):
+        """Check if payload appears encoded or encrypted."""
+        # High proportion of non-printable characters
+        non_printable = sum(1 for c in payload if ord(c) < 32 or ord(c) > 126)
+        if non_printable > 5:
+            return True
+
+        #https://github.com/decalage2/oletools/blob/master/oletools/olevba.py
+        # Base64
+        if re.search(r'(?:[A-Za-z0-9+/]{4}){1,}(?:[A-Za-z0-9+/]{2}[AEIMQUYcgkosw048]=|[A-Za-z0-9+/][AQgw]==)?', payload):
+            return True
+        # Hexadecimal
+        if re.search(r'(?:[0-9A-Fa-f]{2}){4,}', payload):
+            return True
+        # (see https://github.com/JamesHabben/MalwareStuff)
+        # dridex_string
+        if re.search(r'"[0-9A-Za-z]{20,}"', payload):
+            return True
+
+        return False
+
+    def analyze_packet(self, packet):
+        """Process network packets, logging suspicious Office-related traffic."""
+        
+        try:
+            if IP in packet:
+                src_ip = packet[IP].src
+                dst_ip = packet[IP].dst
+                proto = "TCP" if TCP in packet else "UDP" if UDP in packet else "Unknown"
+                src_port = packet[TCP].sport if TCP in packet else packet[UDP].sport if UDP in packet else 0
+                dst_port = packet[TCP].dport if TCP in packet else packet[UDP].dport if UDP in packet else 0
+                if packet.haslayer("Raw"):
+                    payload = packet["Raw"].load.decode(errors='ignore').strip()
+                    if any(x in payload.lower() for x in ["get", "post"]) and self._is_encoded_payload(payload):
+                        self._log(f"Network: {proto} {src_ip}:{src_port} -> {dst_ip}:{dst_port}", "WARN")
+                        self._log(f"Potential C2 communication detected: {payload}", "CRITICAL")
+                        if src_ip not in self.analyzer.exclusions.get('ips', []):
+                            self.watchlist.watchlist_ip.append(src_ip)
+                        else:
+                            self.watchlist.watchlist_ip.append(src_ip)
+                            
+
+        except Exception as e:
+            self._log(f"Packet processing error: {str(e)}", "ERROR")

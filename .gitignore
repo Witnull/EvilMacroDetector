@@ -1,6 +1,6 @@
 *_pycache_*
 Logs
-SYSINTERNAL/*
+SYSINTERNAL
 TestLogs
 VBA
 *.xlsm

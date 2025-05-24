@@ -18,7 +18,8 @@
         "C:\\Program Files\\Git",
         "C:\\Program Files (x86)\\Windows Kits",
         "C:\\Users\\null\\AppData\\Roaming\\Microsoft\\Templates",
-        "C:\\$Recycle.Bin"
+        "C:\\$Recycle.Bin",
+        "C:\\Program Files"
     ],
     "processes": ["trusted.exe"],
     "command_patterns": [

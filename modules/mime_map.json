@@ -202,7 +202,7 @@
 	"distz": "application/octet-stream",
 	"djv": "image/vnd.djvu",
 	"djvu": "image/vnd.djvu",
-	"dll": "application/x-msdownload",
+	"dll": "application/x-dosexec",
 	"dmg": "application/x-apple-diskimage",
 	"dmp": "application/vnd.tcpdump.pcap",
 	"dms": "application/octet-stream",

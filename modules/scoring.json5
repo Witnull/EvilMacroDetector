@@ -1,0 +1,39 @@
+{
+     // File extension
+    "unknown_extension": 0,
+    "office": 0,
+    "exe": 20, // including dll, bin, etc...
+    "other": 0,
+    "mismatch_office": 20,
+    "mismatch_exe": 30,
+    "not_valid": 0,
+    "validation_error": 0,
+
+    //Handle
+    "handle_suspicious_process": 20,
+    "handle_suspicious_system_process": 30,
+
+    //Listdlls
+    "suspicious_dll": 30,
+    "non_system_dll": 30,
+    "unsigned_file": 20,
+    
+    //Macro
+    "macro_present": 30,
+    "suspicious_keyword": 20,
+    "ioc": 50,
+    "vba_obfuscated": 30,
+    "dde_link": 20,
+    "autoexec": 20,
+    "command": 20, // Due to may have false positive
+
+    "suspicious_process": 30,
+    "suspicious_dll_with_suspicious_processs": 50,
+
+    //EXE
+    "non_standard_path_exe": 10, // there is many
+    "temp_directory_exe": 30, // suspicious
+
+    //Process
+    "suspicious_connection": 30,
+}
