@@ -15,6 +15,7 @@ import subprocess
 import sys
 import time
 import trio
+
 import xml.etree.ElementTree as ET
 from aioresult import ResultCapture
 from datetime import datetime
@@ -22,7 +23,8 @@ from scapy.all import sniff, IP, TCP, UDP, wrpcap,DNS, DNSQR, Raw
 from scapy.main import load_layer
 load_layer("tls")
 from scapy.layers.tls.record import TLS
-import uuid
+from queue import Queue
+import threading
 # Prevent errors from being printed to the console
 sys.stderr = sys.stderr or io.StringIO()
 sys.stdout = sys.stdout or io.StringIO()
@@ -118,7 +120,7 @@ class Analyzer:
     Like: ip, file, process ...
     """
 
-    def _analyzing_dlls(self, pid):
+    async def _analyzing_dlls(self, pid):
         proc_info = psutil.Process(pid)
         threat_score = 0
         dll_results ={}
@@ -127,12 +129,29 @@ class Analyzer:
             if has_suspicious_dll:
                 for dll in dll_results.get('suspicious_dlls', []):
                     self.watchlist.add_process(proc_info.pid, dll)
+                    has_suspicious_dll, dll_results = self.analyze_process(dll['pid'], is_child=True)  # Analyze the process accessing the DLL
                     self.logger.info(f"Sus process {proc_info.pid} is accessing suspicious DLL: {dll['path']}")
                     self.log_func(f"Sus process {proc_info.pid} is accessing suspicious DLL: {dll['path']}", "CRITICAL")
                     threat_score += self.scoring.get('suspicious_dll_with_suspicious_processs', 40) 
 
         return dll_results, threat_score
 
+    async def _analyzing_suspicious_handle(handle_info):
+        results ={}
+        threat_score = 0
+        for handle_info in handle_output.get('suspicious_process', []):
+            self.logger.info(f"Process {pid} is accessed by suspicious process {handle_info['Process']}")
+            dlls_results , dll_score = await self._analyzing_dlls(handle_info['pid'])
+            threat_score += dll_score 
+            results.update(dlls_results)
+
+        for handle_info in handle_output.get('suspicious_system_process', []):
+            self.logger.info(f"Process {pid} is accessed by SYSTEM suspicious process {handle_info['Process']}")
+            self.log_func(f"Process {pid} is accessed by SYSTEM suspicious process {handle_info['Process']}", "CRITICAL")
+            dlls_results , dll_score = await self._analyzing_dlls(handle_info['pid'])
+            threat_score += dll_score 
+            results.update(dlls_results)
+        return results, threat_score
 
     async def analyze_office(self, file_path):
         """Analyze Office files and summarize findings.
@@ -158,12 +177,12 @@ class Analyzer:
         threat_score = 0
 
         try:
-            is_valid, file_type, type_score = self.parser.validate_file_type(file_path)
-            threat_score += type_score
-            if not is_valid:
-                self.logger.info(f"Invalid file type for {file_path}: {file_type}")
-                self.log_func(f"Invalid file type for {file_path}: {file_type}", "ERROR")
-                return is_suspicious, results
+            # is_valid, file_type, type_score = self.parser.validate_file_type(file_path)
+            # threat_score += type_score
+            # if not is_valid:
+            #     self.logger.info(f"Invalid file type for {file_path}: {file_type}")
+            #     self.log_func(f"Invalid file type for {file_path}: {file_type}", "ERROR")
+            #     return is_suspicious, results
 
             self.logger.info(f"Analyzing Office file: {file_path}")
 
@@ -171,7 +190,8 @@ class Analyzer:
             threat_score += macro_results.get('threat_score', 0)
             results.update(macro_results)
 
-            has_suspicious_handle, handle_output = self.parser.check_handles(file_path)
+            res = self.parser.check_handles(file_path)
+            has_suspicious_handle, handle_output = res
             threat_score += handle_output.get('threat_score', 0)
             results.update(handle_output)
 
@@ -205,21 +225,15 @@ class Analyzer:
                 # Check Handle exist then file is being used ;
                 # Can only check parent proc - not that useful
                 # if the file is accessed by any suspicious processes, then  further analyze their dlls
-                for handle_info in handle_output.get('suspicious_system_process', []):
-                    self.logger.info(f"File {file_path} is accessed by SYSTEM suspicious process {handle_info['Process']}")
-                    self.log_func(f"File {file_path} is accessed by SYSTEM suspicious process {handle_info['Process']}", "CRITICAL")
-                    dlls_results , dll_score = self._analyzing_dlls(handle_info)
-                    threat_score += dll_score 
-                    results.update(dlls_results)
-
-                for handle_info in handle_output.get('suspicious_process', []):
-                    self.logger.info(f"File {file_path} is accessed by suspicious process {handle_info['Process']}")
-                    dlls_results , dll_score = self._analyzing_dlls(handle_info)
-                    threat_score += dll_score 
-                    results.update(dlls_results)
+                if has_suspicious_handle:
+                    res = self._analyzing_suspicious_handle(handle_output)
+                    suspicious_handle_results, dll_score = res
+                    threat_score += dll_score
+                    results.update(suspicious_handle_results)
                 #########
-            results['threat_score'] = threat_score     # if suspicious / mostly will > 70      
+            results['threat_score'] = threat_score     # if suspicious / mostly will > 100      
             self.log_func("Function analyze_office completed in {:.3f} seconds".format(time.time() - benchmark_start), "BM")
+            
             return is_suspicious, results
         except Exception as e:
             self.logger.error(f"Unexpected error analyzing Office file {file_path}: {str(e)}")
@@ -250,12 +264,12 @@ class Analyzer:
         is_suspicious = False
         threat_score = 0
         try:
-            is_valid, file_type, type_score = self.parser.validate_file_type(file_path)
-            threat_score += type_score
-            if not is_valid:
-                self.logger.info(f"Invalid file type for {file_path}: {file_type}")
-                self.log_func(f"Invalid file type for {file_path}: {file_type}", "ERROR")
-                return is_suspicious ,results
+            # is_valid, file_type, type_score = self.parser.validate_file_type(file_path)
+            # threat_score += type_score
+            # if not is_valid:
+            #     self.logger.info(f"Invalid file type for {file_path}: {file_type}")
+            #     self.log_func(f"Invalid file type for {file_path}: {file_type}", "ERROR")
+            #     return is_suspicious ,results
 
             self.logger.info(f"Analyzing EXEcutable file: {file_path}")
 
@@ -284,24 +298,16 @@ class Analyzer:
                 threat_score += self.scoring.get('unsigned_file', 20)
 
             # Check handles and dlls
-            has_suspicious_handle, handle_output = self.parser.check_handles(file_path)
+            res = await self.parser.check_handles(file_path)
+            has_suspicious_handle, handle_output = res
             threat_score += handle_output.get('threat_score', 0)
             results.update(handle_output)
 
             if has_suspicious_handle: # then the file is being used by some process and in watchlist
-                for handle_info in handle_output.get('suspicious_process', []):
-                    self.logger.info(f"File {file_path} is accessed by suspicious process {handle_info['process']}")
-                    dlls_results , dll_score = self._analyzing_dlls(handle_info['pid'])
-                    threat_score += dll_score 
-                    results.update(dlls_results)
-
-                for handle_info in handle_output.get('suspicious_system_process', []):
-                    self.logger.info(f"File {file_path} is accessed by SYSTEM suspicious process {handle_info['process']}")
-                    self.log_func(f"File {file_path} is accessed by SYSTEM suspicious process {handle_info['process']}", "CRITICAL")
-                    dlls_results , dll_score = self._analyzing_dlls(handle_info['pid'])
-                    threat_score += dll_score 
-                    results.update(dlls_results)
-
+                res = self._analyzing_suspicious_handle(handle_output)
+                suspicious_handle_results, dll_score = res
+                threat_score += dll_score
+                results.update(suspicious_handle_results)
             # Check Sysmon events
             # has_sysmon_event, sysmon_output = self.parser.check_sysmon_events(file_path)
             # results['sysmon'] = sysmon_output
@@ -354,22 +360,37 @@ class Analyzer:
                 is_suspicious = has_suspicious
                 results.update(analyze_office_results)
                 threat_score += analyze_office_results.get('threat_score', 0)
+                if "mismatch" in file_type and is_suspicious:
+                    threat_score += self.scoring.get('mismatch_office', 20)
             elif "exe" in file_type:
                 res = await self.analyze_exe(file_path)
                 has_suspicious, analyze_exe_results = res
                 is_suspicious = has_suspicious
                 results.update(analyze_exe_results)
                 threat_score += analyze_exe_results.get('threat_score', 0)
+                if "mismatch" in file_type and is_suspicious:
+                    threat_score += self.scoring.get('mismatch_exe', 20)
             else:
                 self.log_func(f"File type not supported: {file_path} - {file_type}" , "IGNORED")
                 return
             
             results['threat_score'] = threat_score
-            if threat_score >= 70:
+            if threat_score >= 100:
                 self.log_func(f"File {file_path} is suspicious (Score: {threat_score})", "CRITICAL")
                 self.logger.warn(f"File {file_path} is suspicious (Score: {threat_score})")
                 results['response'] = "Monitored"
                 self.watchlist.add_file(file_hash, file_path, results)
+                self.threat_response.export_analysis_results(file_path, results)
+                if threat_score >= 200:    
+                    self.log_func(f"File {file_path} is dangerous (Score: {threat_score})", "CRITICAL")
+                    self.logger.critical(f"File {file_path} is dangerous (Score: {threat_score})")
+                    results['response'] = "Quarantined/Neutralized"
+                    self.watchlist.add_file(file_hash, file_path, results)
+                    self.threat_response.terminate_process(results['handle_output'], "handle")
+                    if file_type == "office":
+                        self.threat_response.remove_vba_macro(file_path)
+                    self.threat_response.quarantine_file(file_path)
+
             else:
                 self.log_func(f"File {file_path} deemed safe (Score: {threat_score})", "INFO")
             return is_suspicious, results
@@ -393,7 +414,7 @@ class Analyzer:
             return True
         return False
 
-    async def analysis_process(self, pid, is_child=False):
+    async def analyze_process(self, pid, is_child=False):
         """Analyze a process for suspicious behavior."""
         benchmark_start = time.time()
         results = {
@@ -416,7 +437,7 @@ class Analyzer:
 
             results['pid'] = pid
 
-            proc_name = proc['name'].lower()
+            proc_name = proc.name().lower()
             if proc_name in self.exclusions.get('processes', []):
                 self.logger.info(f"Process {proc_name}-{pid} is in exclusion list, skipping analysis")
                 self.log_func(f"Process {proc_name}-{pid} is in exclusion list, skipping analysis", "IGNORED")
@@ -425,12 +446,12 @@ class Analyzer:
 
 
             exe_path = proc.exe()
-            if any(exe_path.lower().startswith(folder.lower()) for folder in self.analyzer.exclusions.get('folders', [])):
+            if any(exe_path.lower().startswith(folder.lower()) for folder in self.exclusions.get('folders', [])):
                 #self._log(f"Skipping process in excluded folder: {exe_path} (PID: {pid})", "DEBUG")
                 return is_suspicious, results
             results['exe_path'] = exe_path
 
-            cmdline =  ' '.join(proc_info['cmdline']) if proc_info['cmdline'] else ''
+            cmdline =  ' '.join(proc.cmdline()) if proc.cmdline() else ''
             if cmdline and any(re.search(pattern, cmdline[0], re.IGNORECASE) for pattern in self.exclude_command_pattern_regexes):
                 self.logger.info(f"Process {proc_name}-{pid} command line matches exclusion patterns, skipping analysis")
                 self.log_func(f"Process {proc_name}-{pid} command line matches exclusion patterns, skipping analysis", "IGNORED")
@@ -492,24 +513,18 @@ class Analyzer:
             #     except:
             #         child_processes = [{'error': 'Unable to access child processes'}]
 
-            has_suspicious_handle, handle_output = self.check_handles(pid)
-            threat_score += handle_output.get('threat_score',0)
-            results.update(handle_output)
-            if has_suspicious_handle:
-                for handle_info in handle_output.get('suspicious_process', []):
-                    self.logger.info(f"Process {pid} is accessed by suspicious process {handle_info['Process']}")
-                    dlls_results , dll_score = self._analyzing_dlls(handle_info)
-                    threat_score += dll_score 
-                    results.update(dlls_results)
+            if  is_child == False:
+                res= await self.check_handles(pid)
+                has_suspicious_handle, handle_output  = res
+                threat_score += handle_output.get('threat_score',0)
+                results.update(handle_output)
+                if has_suspicious_handle:
+                    res = self._analyzing_suspicious_handle(handle_output)
+                    suspicious_handle_results, dll_score = res
+                    threat_score += dll_score
+                    results.update(suspicious_handle_results)
 
-                for handle_info in handle_output.get('suspicious_system_process', []):
-                    self.logger.info(f"Process {pid} is accessed by SYSTEM suspicious process {handle_info['Process']}")
-                    self.log_func(f"Process {pid} is accessed by SYSTEM suspicious process {handle_info['Process']}", "CRITICAL")
-                    dlls_results , dll_score = self._analyzing_dlls(handle_info)
-                    threat_score += dll_score 
-                    results.update(dlls_results)
-            
-            if theat_score >= 70:
+            if threat_score >= 100:
                 is_suspicious = True
                 self.log_func(f"Process {proc_name}-{pid} is suspicious (Score: {threat_score})", "CRITICAL")
                 self.logger.critical(f"Process {proc_name}-{pid} is suspicious (Score: {threat_score})")
@@ -571,11 +586,13 @@ class Analyzer:
 
             threading.Thread(target=trio_worker, daemon=True).start()
 
-    def analyze_packet(self, packet):
+    async def analyze_packet(self, packet):
         """Process network packets, logging suspicious Office-related traffic."""
         benchmark_start = time.time()
         try:
+
             if IP in packet:
+               
                 src_ip = packet[IP].src
                 dst_ip = packet[IP].dst
                 proto = "TCP" if TCP in packet else "UDP" if UDP in packet else "Unknown"
@@ -583,7 +600,8 @@ class Analyzer:
                 dst_port = packet[TCP].dport if TCP in packet else packet[UDP].dport if UDP in packet else 0
                 if packet.haslayer("Raw"):
                     payload = packet["Raw"].load.decode(errors='ignore')
-                    if any(x in payload.lower() for x in ["get", "post"]):
+                    if any(x in payload.lower() for x in ["get", "post","user-agent"]):
+                        self.log_func(f"Processing packet: {packet.summary()}", "NET")
 
                         if any(ext in payload.lower() for ext in self.exe_extensions + self.office_extensions):
                             self._log(f"Potential file download: {proto} {src_ip}:{src_port} -> {dst_ip}:{dst_port} | Payload: {payload[:100]}", "WARN")
@@ -600,12 +618,11 @@ class Analyzer:
                                     "dst_port": dst_port,
                                     "response": "Monitored"
                                 }
-
-                                
-                        if self._is_encoded_payload(payload):
+                        self.log_func(f"Packet encoded: {self._is_encoded_payload(payload.strip())}", "NET")
+                        if self._is_encoded_payload(payload.strip()):
                             self._log(f"Network: {proto} {src_ip}:{src_port} -> {dst_ip}:{dst_port}", "WARN")
                             self._log(f"Potential C2 communication detected: {payload[:100]}", "CRITICAL")
-                            if src_ip not in self.analyzer.exclusions.get('ips', []):
+                            if src_ip not in self.exclusions.get('ips', []):
                                 self.watchlist.watchlist_ip[src_ip] = {
                                     "type": "Potential C2", 
                                     "payload": payload, 

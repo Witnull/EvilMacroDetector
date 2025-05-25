@@ -40,17 +40,19 @@
         "pip",
         "Packages",
         ".matplotlib",
-        "Visual Studio 2022"
+        "Visual Studio 2022",
+        "IDAPro6.6full"
     ],
     "processes": [
         "trusted.exe"
     ],
     "file_extensions": [
-        ".txt",
-        ".log",
-        ".md",
-        ".json",
-        ".tmp"
+        "txt",
+        "log",
+        "md",
+        "json",
+        "tmp",
+        "rbf"
     ],
     "command_patterns": [
         ".*\\.vscode-server.*code-.*\\.exe.*command-shell.*",

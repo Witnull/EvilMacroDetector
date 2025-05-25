@@ -161,18 +161,23 @@ class Parser:
             self.log_func(f"File type validation failed for {file_path}: {str(e)}", "ERROR")
             return False, "not_valid" , self.scoring.get('validation_error', 10)
 
-    def _parse_check_sig(self,cmd_output):
+    def _parse_check_sig(self, cmd_output):
         result = {}
         # Split input into lines and process each line
         for line in cmd_output.strip().split('\n'):
             # Clean the line
             line = line.strip()
-            if ':' not in line:
+            # Skip empty lines or lines without a colon
+            if not line or ':' not in line:
                 continue
                 
             # Split key and value
             key, value = map(str.strip, line.split(':', 1))
             
+            # Skip the file path line (it ends with a colon)
+            if value.endswith(':'):
+                continue
+                
             # Standardize key format (lowercase, replace spaces with underscores)
             key = key.lower().replace(' ', '_')
             
@@ -189,7 +194,8 @@ class Parser:
             
             # Store value
             result[key] = value
-            return result
+        
+        return result
 
     def check_sig(self,file_path):
         """
@@ -200,42 +206,59 @@ class Parser:
            
         Returns: bool
         """
+        benchmark_start = time.time()
         is_suspicious = False
         try:
-            pe = pefile.PE(file_path, fast_load=True)
-            pe.parse_data_directories(directories=[pefile.DIRECTORY_ENTRY['IMAGE_DIRECTORY_ENTRY_SECURITY']])
-
-            if hasattr(pe, 'DIRECTORY_ENTRY_SECURITY'):         
-                cmd = [self.sigcheck_exe, "-nobanner", "-accepteula", "-e", str(file_path)]
-                result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-                output = result.stdout
-                parsed_output = self._parse_check_sig(output)
-                if parsed_ouput['verified'] == 'Unsigned':
-                    self.logger.warning(f"Unsigned file detected: {file_path}")
-                    self.log_func(f"Unsigned file detected: {file_path}", "WARN")
-                    return False
-                try:
-                    days_diff = (datetime.now()- parsed_output['signing_date']).days
-                    if days_diff < 60:
-                        self.logger.warning(f"File {file_path} signed less than 60 days ago: {parsed_output['signing_date']} considered not signed")
-                        self.log_func(f"File {file_path} signed less than 60 days ago: {parsed_output['signing_date']} considered not signed", "WARN")
-                        return False
-                except Exception as e:
-                    self.logger.error(f"Failed to parse signing date for {file_path}: {str(e)}")
-                    self.log_func(f"Failed to parse signing date for {file_path}: {str(e)}", "ERROR")
-                return True
-            else:
-                self.logger.warning(f"No signature found in {file_path}, file is likely unsigned.")
+            cmd = [self.sigcheck_exe, "-nobanner", "-accepteula", "-e", str(file_path)]
+            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            output = result.stdout
+            parsed_output = self._parse_check_sig(output)
+            # Check if 'verified' key exists and if the file is unsigned
+            if 'verified' not in parsed_output:
+                self.log_func(f"Failed to parse 'verified' status for {file_path}", "ERROR")
                 return False
 
-        except PermissionError as e:
+            if parsed_output['verified'] == 'Unsigned':
+                self.log_func(f"Unsigned file detected: {file_path}", "WARN")
+                return False
+
+            # Check signing date
+            if 'signing_date' in parsed_output:
+                try:
+                    signing_date = datetime.fromisoformat(parsed_output['signing_date'])
+                    days_diff = (datetime.now() - signing_date).days
+                    if days_diff < 60:
+                        self.log_func(f"File {file_path} signed less than 60 days ago: {parsed_output['signing_date']} considered not signed")
+                        return False
+                    else:
+                        self.log_func(f"Benchmark completed for {file_path} in {time.time() - benchmark_start:.2f} seconds","BM")
+                        return True  # Explicitly return True for valid, older signatures
+                except ValueError as e:
+                    self.log_func(f"Error parsing signing date for {file_path}: {str(e)}")
+                    return True
+            else:
+                self.log_func(f"No signing date found for {file_path}, assuming valid signature")
+                return True
+        
+        except subprocess.CalledProcessError:
+            try:
+                pe = pefile.PE(file_path, fast_load=True)
+                pe.parse_data_directories(directories=[pefile.DIRECTORY_ENTRY['IMAGE_DIRECTORY_ENTRY_SECURITY']])
+                if hasattr(pe, 'DIRECTORY_ENTRY_SECURITY'):
+                    return True  # File has a security directory, likely signed
+                return False  # No security directory, likely unsigned
+            except Exception as e:
+                self.log_func(f"PE file parsing failed for {file_path}: {str(e)}")
+                return False
+        except PermissionError:
+            self.log_func(f"Permission denied for {file_path}")
             return False
-        except FileNotFoundError as e:
+        except FileNotFoundError:
+            self.log_func(f"File not found: {file_path}")
             return False
         except Exception as e:
-            self.log_func(f"Sigcheck failed for {file_path}: {str(e)}", "ERROR")
+            self.log_func(f"Sigcheck failed for {file_path}: {str(e)} Considered as no sig", "ERROR")
             return False
-
 
     def _parse_handle_output(self, output):
         """
@@ -322,6 +345,7 @@ class Parser:
                 - threat_score: Score based on the analysis.
                 - error: Error message if any occurred during execution.
         """
+        benchmark_start = time.time()
         results = {
                     'handle_output': [],
                     'handle_suspicious_process': [],
@@ -352,8 +376,10 @@ class Parser:
                         results['handle_suspicious_system_process'].append(handle_info)
                         self.watchlist.add_process(handle_info['pid'], handle_info)
 
+            self.log_func(f"Handle check completed for {str(file_path_or_pid)} in {time.time() - benchmark_start:.2f} seconds","BM")
             return is_suspicious , results
-
+        except subprocess.CalledProcessError as e:
+            return is_suspicious, results
         except PermissionError as e:
             return is_suspicious, results
         except FileNotFoundError as e:
@@ -491,6 +517,7 @@ class Parser:
                 - threat_score: Score based on the analysis findings.
         
         """
+        benchmark_start = time.time()
         results = {
             'listdlls_output': [],
             'suspicious_dlls': [],
@@ -553,8 +580,8 @@ class Parser:
                     results['suspicious_dlls'].append(dll)
                     results['threat_score'] += self.scoring.get('unsigned_file', 30)
 
+            self.log_func(f"ListDLLs check completed for PID {pid} in {time.time() - benchmark_start:.2f} seconds","BM")
             return is_suspicious, results
-            
         except PermissionError as e:
             return is_suspicious, results
         except FileNotFoundError as e:
@@ -609,6 +636,7 @@ class Parser:
             - autoexec: True if any AutoExec macros are detected.
 
         """
+        benchmark_start = time.time()
         results = {
             'macros':[],
             'dde': [],
@@ -664,7 +692,7 @@ class Parser:
                 results.update(olevba_analyse_results)
 
                 # Deobfuscate macros if present
-                if macro_results.get('has_macros', False) and macro_results.get('vba_obfuscated', False):
+                if  olevba_analyse_results.get('has_macros', False) and  olevba_analyse_results.get('vba_obfuscated', False):
                     deobufus_await = trio.run(self.deobfuscate_macros, file_path)
                     has_deobfuscated, deobfuscation_results = deobufus_await
                     threat_score += deobfuscation_results.get('threat_score', 0)
@@ -681,8 +709,8 @@ class Parser:
                 self.log_func(f"Macro scanning failed for {file_path}: {str(e)}", "ERROR")
 
             vba_parser.close()
+            self.log_func(f"Macro analysis completed for {file_path} in {time.time() - benchmark_start:.2f} seconds", "BM")
             return is_suspicious, results
-
         except Exception as e:
             self.logger.error(f"Unexpected error in macro analysis for {file_path}: {str(e)}")
             self.log_func(f"Unexpected error in macro analysis for {file_path}: {str(e)}", "ERROR")

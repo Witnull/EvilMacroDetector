@@ -11,7 +11,7 @@ class Blacklist:
         self.log_func = log_func
         os.makedirs(self.save_dir, exist_ok=True)
         self.file_path = os.path.join( os.path.dirname(os.path.abspath(__file__)),'blacklist.json') #os.path.join(self.save_dir, "blacklist.json")
-        self.exclusions_path = os.path.join( os.path.dirname(os.path.abspath(__file__)),'exclusions.json')
+        self.exclusions_path = os.path.join( os.path.dirname(os.path.abspath(__file__)),'exclusions.json5')
         # List of blacklisted 
         self.suspicious_stuff = {
             # Suspicious IP addresses

@@ -24,12 +24,21 @@ class ThreatResponse:
             self.log_func(f"Failed to quarantine {file_path}: {str(e)}", "ERROR")
             return False, str(e)
 
-    def terminate_process(self, pid):
+    def terminate_process(self, pid, type_="pid"):
         """Terminate a suspicious process."""
         try:
-            proc = psutil.Process(pid)
-            #proc.terminate()
-            self.log_func(f"Terminated process PID {pid}", "ALERT")
+            if type_ == "pid":
+                pid = pid_of_file
+                proc = psutil.Process(pid)
+                #proc.terminate()
+                self.log_func(f"Terminated process PID {pid}", "ALERT")
+            elif type_ == "handle":
+                handles = pid
+                for handle in handles:
+                    proc = psutil.Process(handle['pid'])
+                    #proc.terminate()
+                    self.log_func(f"Terminated process PID {handle['pid']}", "ALERT")
+
             return True, f"Terminated PID {pid}"
         except (psutil.NoSuchProcess, psutil.AccessDenied) as e:
             self.log_func(f"Failed to terminate PID {pid}: {str(e)}", "ERROR")
@@ -63,7 +72,7 @@ class ThreatResponse:
         try:
             export_path = os.path.join(self.quarantine_dir, os.path.basename(file_path) + f"_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
             with open(export_path, 'w') as f:
-                f.write(str(results))
+                json.dump(results, f)
             self.log_func(f"Exported analysis results to {export_path}", "ALERT")
             return True, export_path
         except Exception as e:
