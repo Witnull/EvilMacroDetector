@@ -103,7 +103,29 @@ class Parser:
         scoring_path = os.path.join(self.config_dir, 'scoring.json5')
         with open(scoring_path, 'r') as f:
             self.scoring = json5.load(f)
+    
+    def merge_dicts(self, base: dict, *others: dict) -> dict:
+        for other in others:
+            for key, value in other.items():
+                if key not in base:
+                    base[key] = value
+                    continue
 
+                base_val = base[key]
+
+                # Same type: merge logic
+                if isinstance(base_val, dict) and isinstance(value, dict):
+                    merge_dicts(base_val, value)  # recursive merge
+                elif isinstance(base_val, list) and isinstance(value, list):
+                    # Fast set union (no order guaranteed)
+                    base[key] = list(set(base_val).union(value))
+                elif type(base_val) != type(value):
+                    self.log_func(f"Type mismatch on key '{key}': {type(base_val)} != {type(value)} — overwriting.","WARN")
+                    base[key] = value
+                else:
+                    base[key] = value  # overwrite scalar
+
+        return base
     """
     BELOW IS THE MAIN CODE
     that handles the analysis of files, processes, and other components.
@@ -689,14 +711,14 @@ class Parser:
                 vba_analyse_results = vba_parser.analyze_macros()
                 olevba_analyse_results = self._analyse_olevba_results(vba_analyse_results)
                 threat_score += olevba_analyse_results['threat_score']
-                results.update(olevba_analyse_results)
+                self.merge_dicts(results,olevba_analyse_results)
 
                 # Deobfuscate macros if present
-                if  olevba_analyse_results.get('has_macros', False) and  olevba_analyse_results.get('vba_obfuscated', False):
+                if olevba_analyse_results.get('vba_obfuscated', False):
                     deobufus_await = trio.run(self.deobfuscate_macros, file_path)
                     has_deobfuscated, deobfuscation_results = deobufus_await
                     threat_score += deobfuscation_results.get('threat_score', 0)
-                    results.update(deobfuscation_results)
+                    self.merge_dicts(results, deobfuscation_results)
 
                 results['threat_score'] =  threat_score
 
@@ -730,15 +752,23 @@ class Parser:
         for kw_type, keyword, description in vba_analyse_results:
             # types 'AutoExec', 'Suspicious', 'IOC'
             # https://github.com/decalage2/oletools/blob/master/oletools/olevba.py#L2594
-            if kw_type == 'Suspicious':
-                is_suspicious = True
-                results["keywords"].append(f"{keyword}: suspicious@{description}")
-                results['threat_score'] += self.scoring.get('suspicious_keyword', 10)
-
+            
             if 'obfuscate' in description.lower():
                 results['vba_obfuscated'] = True
                 results["keywords"].append(f"{keyword}: vba_obfuscated@{description}")
                 results['threat_score'] += self.scoring.get('vba_obfuscated', 30)
+                continue
+
+            if "command" in description.lower():
+                results["keywords"].append(f"{keyword}: command@{description}")
+                is_suspicious = True
+                results['threat_score'] += self.scoring.get('command', 20)
+                continue
+
+            if kw_type == 'Suspicious':
+                is_suspicious = True
+                results["keywords"].append(f"{keyword}: suspicious@{description}")
+                results['threat_score'] += self.scoring.get('suspicious_keyword', 10)
                 
             if kw_type == 'AutoExec':
                 results["keywords"].append(f"{keyword}: autoexec@{description}")
@@ -763,10 +793,7 @@ class Parser:
                     self.log_func(f"Suspicious IOC detected in macro: {description}", "CRITICAL")
                 results['threat_score'] += self.scoring.get('ioc', 40)     
             
-            if "command" in description.lower():
-                results["keywords"].append(f"{keyword}: command@{description}")
-                is_suspicious = True
-                results['threat_score'] += self.scoring.get('command', 20)
+
 
         return results      
 
@@ -790,9 +817,8 @@ class Parser:
             olevba_analyse_results = self._analyse_olevba_results(vba_analyse_results)
             results['deobfuscated_macro'] = content
             threat_score += olevba_analyse_results['threat_score']
-            results.update(olevba_analyse_results)
+            self.merge_dicts(results, olevba_analyse_results)
             results['threat_score'] = threat_score
-
             return True, results
         except Exception as e:
             self.logger.error(f"Deobfuscation failed for {file_path}: {str(e)}")

@@ -259,7 +259,7 @@
 	"etx": "text/x-setext",
 	"eva": "application/x-eva",
 	"evy": "application/x-envoy",
-	"exe": "application/x-msdownload",
+	"exe": "application/x-dosexec",
 	"exi": "application/exi",
 	"exp": "application/express",
 	"exr": "image/aces",

@@ -4,6 +4,7 @@ import psutil
 import shutil
 import subprocess
 from modules.remove_vba import clean_office_macro
+import json
 
 class ThreatResponse:
     """Handles automated responses to detected threats."""

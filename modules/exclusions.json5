@@ -52,7 +52,8 @@
         "md",
         "json",
         "tmp",
-        "rbf"
+        "rbf",
+        "sys"
     ],
     "command_patterns": [
         ".*\\.vscode-server.*code-.*\\.exe.*command-shell.*",
