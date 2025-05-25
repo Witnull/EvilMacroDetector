@@ -132,6 +132,7 @@ class Parser:
             mime_type = self.mime.from_file(file_path)
             file_ext = os.path.splitext(file_path.lower())[1].lstrip('.')
             expected_mimes = self.mime_map.get(file_ext, [])
+           
             if not expected_mimes:
                 return False, 'unknown', self.scoring.get('unknown_extension', 0)
             if mime_type in expected_mimes:
@@ -152,6 +153,10 @@ class Parser:
                     return True, 'mismatched_exe',self.scoring.get('mismatch_exe', 30) 
 
             return False, "not_valid", 0
+        except PermissionError as e:
+            return False, "permission_denied", 0
+        except FileNotFoundError as e:
+            return False, "not_found", 0
         except Exception as e:
             self.log_func(f"File type validation failed for {file_path}: {str(e)}", "ERROR")
             return False, "not_valid" , self.scoring.get('validation_error', 10)
@@ -222,6 +227,11 @@ class Parser:
             else:
                 self.logger.warning(f"No signature found in {file_path}, file is likely unsigned.")
                 return False
+
+        except PermissionError as e:
+            return False
+        except FileNotFoundError as e:
+            return False
         except Exception as e:
             self.log_func(f"Sigcheck failed for {file_path}: {str(e)}", "ERROR")
             return False
@@ -296,7 +306,7 @@ class Parser:
         
         return result
 
-    def check_handles(self, file_path_or_pid):
+    async def check_handles(self, file_path_or_pid):
         """Use Handle to check which processes are accessing the file.
         Args:
             file_path_or_pid (str): Path to the file or process or PID of the process to check.
@@ -329,7 +339,7 @@ class Parser:
             results['handle_output'] = parsed_output
 
             for handle_info in parsed_output:
-                file_hash = self.hash_file_md5(handle_info.get('name', ''))
+                file_hash = await self.hash_file_md5(handle_info.get('name', ''))
                 if self.watchlist.is_file_in_watchlist(file_hash):
                     self.logger.warning(f"Watchlist file access detected: {handle_info['name']}")
                     is_suspicious = True
@@ -343,12 +353,17 @@ class Parser:
                         self.watchlist.add_process(handle_info['pid'], handle_info)
 
             return is_suspicious , results
-        except subprocess.CalledProcessError as e:
+
+        except PermissionError as e:
+            return is_suspicious, results
+        except FileNotFoundError as e:
+            return is_suspicious, results
+        except Exception as e:
             self.logger.error(f"Handle check failed for {str(file_path_or_pid)}: {str(e)} maybe this file not running")
             self.log_func(f"Handle check failed for {str(file_path_or_pid)}: {str(e)} maybe this file not running", "ERROR")
             return is_suspicious, results
     
-    def hash_file_md5(self, file_path):
+    async def hash_file_md5(self, file_path):
         """
         Calculate MD5 hash of a file.
         
@@ -363,17 +378,17 @@ class Parser:
             IOError: If there's an error reading the file
         """
         md5_hash = hashlib.md5()
-        
         try:
             with open(file_path, 'rb') as file:
-                # Read file in chunks to handle large files efficiently
-                for chunk in iter(lambda: file.read(4096), b''):
+                chunk = await trio.to_thread.run_sync(file.read, 4096)
+                while chunk:
                     md5_hash.update(chunk)
+                    chunk = await trio.to_thread.run_sync(file.read, 4096)
             return md5_hash.hexdigest()
         except FileNotFoundError:
             raise FileNotFoundError(f"File not found: {file_path}")
         except IOError as e:
-            raise IOError(f"Error reading file {file_path}: {str(e)}")
+            raise IOError(f"Error reading file {file_path}: {str(e)}") 
 
 
     def _parse_listdlls_output(self, output):
@@ -539,7 +554,11 @@ class Parser:
                     results['threat_score'] += self.scoring.get('unsigned_file', 30)
 
             return is_suspicious, results
-
+            
+        except PermissionError as e:
+            return is_suspicious, results
+        except FileNotFoundError as e:
+            return is_suspicious, results
         except Exception as e:
             self.logger.error(f"Error analyzing DLLs for PID {pid}: {str(e)}")
             self.log_func(f"Error analyzing DLLs for PID {pid}: {str(e)}", "ERROR")
@@ -653,6 +672,10 @@ class Parser:
 
                 results['threat_score'] =  threat_score
 
+            except PermissionError as e:
+                return is_suspicious, results
+            except FileNotFoundError as e:
+                return is_suspicious, results
             except Exception as e:
                 self.logger.error(f"Macro scanning failed for {file_path}: {str(e)}")
                 self.log_func(f"Macro scanning failed for {file_path}: {str(e)}", "ERROR")

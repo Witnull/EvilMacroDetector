@@ -3,7 +3,7 @@ from datetime import datetime
 import psutil
 import shutil
 import subprocess
-
+from modules.remove_vba import clean_office_macro
 
 class ThreatResponse:
     """Handles automated responses to detected threats."""
@@ -47,6 +47,16 @@ class ThreatResponse:
         except subprocess.CalledProcessError as e:
             self.log_func(f"Failed to block IP {ip_address}: {str(e)}", "ERROR")
             return False, str(e)
+            
+    def remove_vba_macro(self, file_path):
+        """Remove VBA macros from an Office document."""
+        try:
+            clean_office_macro(file_path)
+            self.log_func(f"Removed VBA macros from {file_path}", "ALERT")
+            return True, f"Removed VBA macros from {file_path}"
+        except Exception as e:
+            self.log_func(f"Failed to remove VBA macros from {file_path}: {str(e)}", "ERROR")
+            return False, str(e)
 
     def export_analysis_results(self, file_path, results):
         """Export analysis results to a file."""
@@ -54,7 +64,7 @@ class ThreatResponse:
             export_path = os.path.join(self.quarantine_dir, os.path.basename(file_path) + f"_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
             with open(export_path, 'w') as f:
                 f.write(str(results))
-            self.log_func(f"Exported analysis results to {export_path}", "INFO")
+            self.log_func(f"Exported analysis results to {export_path}", "ALERT")
             return True, export_path
         except Exception as e:
             self.log_func(f"Failed to export analysis results: {str(e)}", "ERROR")

@@ -22,7 +22,8 @@ class Watchlist:
         self.file_path = os.path.join(self.save_dir, "watchlist_")
         self.watchlist_process = {}
         self.watchlist_file = {}
-        self.watchlist_ip=[]
+        self.watchlist_ip={}
+        self.watchlist_url={}
         self.summaries = {
             "file_name_to_hash": {},
             "file": {},
@@ -204,8 +205,171 @@ class Watchlist:
                 self.log_func(f"Error saving watchlist to JSON: {e}", "ERROR")
 
     def is_file_in_watchlist(self, file_hash):
-        """Check if a file is in the watchlist"""
-        with self.file_lock:
-            if file_hash in self.watchlist_file:
-                return True
-        return False
+        """Check if a file is in the watchlist."""
+        with self.lock:
+            return file_hash in self.watchlist_file
+
+    async def compile_target_informations(self, target_info):
+        """
+        Compile target information from watchlist.
+        Correlate process, file, and IP information to trace origin.
+        Args:
+            target_info: File hash, file path, PID, or IP address to analyze.
+        Returns:
+            Dict containing correlated information about the target.
+        """
+        async with self.lock:
+            report = {
+                "target": target_info,
+                "type": None,
+                "file_details": [],
+                "process_details": [],
+                "network_details": [],
+                "origin": None,
+                "timestamp": datetime.now().isoformat(),
+                "threat_score": 0,
+                "correlations": []
+            }
+
+            # Determine target type (file hash, file path, PID, or IP)
+            if target_info in self.watchlist_file or target_info in self.summaries["file_name_to_hash"].values():
+                report["type"] = "file_hash"
+                file_hash = target_info
+            elif target_info in self.summaries["file_name_to_hash"]:
+                report["type"] = "file_path"
+                file_hash = self.summaries["file_name_to_hash"].get(target_info)
+            elif target_info in self.watchlist_process or target_info.isdigit():
+                report["type"] = "pid"
+                pid = int(target_info)
+            elif re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", target_info):
+                report["type"] = "ip"
+                ip = target_info
+            else:
+                report["type"] = "unknown"
+                self.log_func(f"Unknown target type for: {target_info}", "ERROR")
+                return report
+
+            # File-based target (hash or path)
+            if report["type"] in ["file_hash", "file_path"]:
+                if report["type"] == "file_path":
+                    file_hash = self.summaries["file_name_to_hash"].get(target_info)
+                if file_hash and file_hash in self.watchlist_file:
+                    file_summary = await self.generate_summary_file(file_hash, force=True)
+                    report["file_details"].append(file_summary)
+                    report["threat_score"] += file_summary.get("threat_score", 0)
+                    
+                    # Correlate with processes
+                    for pid in file_summary.get("related_pid", []):
+                        if pid in self.watchlist_process:
+                            proc_summary = await self.generate_summary_process(pid, force=True)
+                            report["process_details"].append(proc_summary)
+                            report["threat_score"] += proc_summary.get("threat_score", 0)
+                            report["correlations"].append({
+                                "type": "file_to_process",
+                                "file_hash": file_hash,
+                                "pid": pid,
+                                "process_name": proc_summary.get("name")
+                            })
+
+                    # Correlate with network (URLs and IPs)
+                    for entry in self.watchlist_file.get(file_hash, []):
+                        if "source_url" in entry:
+                            report["network_details"].append({
+                                "url": entry["source_url"],
+                                "timestamp": entry.get("timestamp").isoformat()
+                            })
+                            report["origin"] = entry["source_url"]
+                        if "source_ip" in entry:
+                            report["network_details"].append({
+                                "ip": entry["source_ip"],
+                                "timestamp": entry.get("timestamp").isoformat()
+                            })
+                            report["origin"] = entry["source_ip"] if not report["origin"] else report["origin"]
+
+                    # Check for C2 IPs in watchlist_ip
+                    for ip in self.watchlist_ip:
+                        for entry in self.watchlist_ip[ip]:
+                            if file_hash in entry.get("related_files", []):
+                                report["network_details"].append({
+                                    "ip": ip,
+                                    "type": "C2",
+                                    "timestamp": entry.get("timestamp").isoformat()
+                                })
+                                report["correlations"].append({
+                                    "type": "file_to_c2",
+                                    "file_hash": file_hash,
+                                    "ip": ip
+                                })
+
+            # Process-based target (PID)
+            elif report["type"] == "pid":
+                if pid in self.watchlist_process:
+                    proc_summary = await self.generate_summary_process(pid, force=True)
+                    report["process_details"].append(proc_summary)
+                    report["threat_score"] += proc_summary.get("threat_score", 0)
+                    
+                    # Correlate with files
+                    for file_path in proc_summary.get("file_related", []):
+                        file_hash = self.summaries["file_name_to_hash"].get(os.path.basename(file_path))
+                        if file_hash and file_hash in self.watchlist_file:
+                            file_summary = await self.generate_summary_file(file_hash, force=True)
+                            report["file_details"].append(file_summary)
+                            report["threat_score"] += file_summary.get("threat_score", 0)
+                            report["correlations"].append({
+                                "type": "process_to_file",
+                                "pid": pid,
+                                "file_hash": file_hash,
+                                "file_path": file_path
+                            })
+
+                    # Correlate with network
+                    for entry in self.watchlist_process.get(pid, []):
+                        if "network" in entry:
+                            report["network_details"].append(entry["network"])
+                            report["origin"] = entry["network"].get("url") or entry["network"].get("ip")
+
+            # IP-based target
+            elif report["type"] == "ip":
+                if ip in self.watchlist_ip:
+                    for entry in self.watchlist_ip[ip]:
+                        report["network_details"].append({
+                            "ip": ip,
+                            "type": entry.get("type", "unknown"),
+                            "timestamp": entry.get("timestamp").isoformat()
+                        })
+                        # Correlate with files
+                        for file_hash in entry.get("related_files", []):
+                            if file_hash in self.watchlist_file:
+                                file_summary = await self.generate_summary_file(file_hash, force=True)
+                                report["file_details"].append(file_summary)
+                                report["threat_score"] += file_summary.get("threat_score", 0)
+                                report["correlations"].append({
+                                    "type": "ip_to_file",
+                                    "ip": ip,
+                                    "file_hash": file_hash
+                                })
+                        # Correlate with processes
+                        for pid in entry.get("related_pids", []):
+                            if pid in self.watchlist_process:
+                                proc_summary = await self.generate_summary_process(pid, force=True)
+                                report["process_details"].append(proc_summary)
+                                report["threat_score"] += proc_summary.get("threat_score", 0)
+                                report["correlations"].append({
+                                    "type": "ip_to_process",
+                                    "ip": ip,
+                                    "pid": pid
+                                })
+                        if entry.get("type") == "download":
+                            report["origin"] = ip
+
+            # Save report to JSON
+            report_file = os.path.join(self.save_dir, f"report_{target_info}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
+            try:
+                async with trio.open_file(report_file, "w") as f:
+                    await f.write(json.dumps(report, indent=2))
+                self.log_func(f"Target information report saved to: {report_file}", "WATCHLIST")
+            except Exception as e:
+                self.log_func(f"Error saving report: {e}", "ERROR")
+
+            self.log_func(f"Compiled target information for: {target_info}", "WATCHLIST")
+            return report

@@ -1,4 +1,5 @@
 import json
+import json5
 from datetime import datetime
 import os
 
@@ -49,7 +50,7 @@ class Blacklist:
     def load_exclusions(self):
         """Load exclusion configurations from JSON file."""
         with open(self.exclusions_path, 'r') as f:
-            self.exclusions = json.load(f)
+            self.exclusions = json5.load(f)
 
     def save_to_json(self, force=False):
         """ Save the blacklist to a JSON file """

@@ -1,0 +1,63 @@
+{
+    "ips": [
+        "13.89.178.27",
+        "52.109.16.3",
+        "52.123.129.14",
+        "199.232.214.172",
+        "23.195.109.31",
+        "142.250.196.227",
+        "40.79.173.40",
+        "52.111.240.11",
+        "192.168.146.126",
+        "8.8.8.8"
+    ],
+
+    // List of directories to exclude by full path
+    // Ref:
+    // https://medium.com/%40sasikumarbibin/windows-common-directories-and-threat-actors-3ddcb3c9fad0
+    // 
+    
+    "folders" : [
+        "C:\\Users\\null\\Downloads\\CCMD_DA",
+        "C:\\Program Files (x86)",
+        "C:\\$Recycle.Bin",
+        "C:\\Program Files",
+        "C:\\ProgramData",
+        "C:\\Windows"
+    ],
+
+    // List of folder names to exclude
+    "folders_name" : [
+        "WindowsApps",
+        "Microsoft.NET",
+        "Microsoft",
+        "Application Data",
+        ".vscode-server",
+        "Python",
+        "BraveSoftware",
+        "SweetScape", // 010 Hex Editor
+        "Microsoft_Corporation",
+        "pip",
+        "Packages",
+        ".matplotlib",
+        "Visual Studio 2022"
+    ],
+    "processes": [
+        "trusted.exe"
+    ],
+    "file_extensions": [
+        ".txt",
+        ".log",
+        ".md",
+        ".json",
+        ".tmp"
+    ],
+    "command_patterns": [
+        ".*\\.vscode-server.*code-.*\\.exe.*command-shell.*",
+        ".*\\.vscode-server.*code-server\\.cmd.*--connection-token=remotessh.*",
+        ".*\\.vscode-server.*shellIntegration\\.ps1.*",
+        ".*cmd\\.exe /c powershell$",
+        ".*powershell\\.exe -noexit -command try.*",
+        ".*powershell\\.exe$"
+    ]
+}
