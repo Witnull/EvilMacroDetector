@@ -38,9 +38,10 @@ class Analyzer:
         self.blacklist = blacklist
         self.watchlist = watchlist
 
-        self.threat_response = ThreatResponse(self.log_func, self.log_dir)
-        self.parser = Parser(sysinternals_path, self.log_dir, self.blacklist, self.watchlist, self.log_func)
         
+        self.parser = Parser(sysinternals_path, self.log_dir, self.blacklist, self.watchlist, self.log_func)
+        self.threat_response = ThreatResponse(self.log_func, self.log_dir, self.parser)
+
         #Separated logger
         os.makedirs(self.log_dir, exist_ok=True)
         self.logger = self._setup_logger()
@@ -334,7 +335,7 @@ class Analyzer:
                 # if 'handle_output' in results:
                 #     self.threat_response.terminate_process(results['handle_output'], "handle")
                 if "office" in file_type:
-                    self.threat_response.remove_vba_macro(file_path)
+                    await self.threat_response.remove_vba_macro(file_path)
                 #self.threat_response.quarantine_file(file_path)
             else:
                 self.log_func(f"File {file_path} deemed safe (Score: {threat_score})", "INFO")
@@ -413,20 +414,11 @@ class Analyzer:
                     trace_id = None
                     # Check which watchlist it belongs to and set trace
                     if attr in self.watchlist.watchlist_url:
-                        trace_id = self.watchlist.watchlist_url[attr].get('trace')
-                        if not trace_id:
-                            trace_id = str(uuid4())
-                            self.watchlist.watchlist_url[attr]['trace'] = trace_id
+                        trace_id = self.watchlist.watchlist_url[attr].get('trace',str(uuid4()))
                     elif attr in self.watchlist.watchlist_ip:
-                        trace_id = self.watchlist.watchlist_ip[attr].get('trace')
-                        if not trace_id:
-                            trace_id = str(uuid4())
-                            self.watchlist.watchlist_ip[attr]['trace'] = trace_id
+                        trace_id = self.watchlist.watchlist_ip[attr].get('trace',str(uuid4()))
                     elif attr in self.watchlist.watchlist_file_name:
-                        trace_id = self.watchlist.watchlist_file_name[attr].get('trace')
-                        if not trace_id:
-                            trace_id = str(uuid4())
-                            self.watchlist.watchlist_file_name[attr]['trace'] = trace_id
+                        trace_id = self.watchlist.watchlist_file_name[attr].get('trace',str(uuid4()))
                     results['trace'] = trace_id
                     self.watchlist.add_process(pid, results)
                     break  # Only need to process the first match
@@ -532,7 +524,7 @@ class Analyzer:
             #     threat_score += dll_score
             #     self.parser.merge_dicts(results, suspicious_handle_results)
 
-            if threat_score >= 100:
+            if threat_score >= 50:
                 is_suspicious = True
                 self.threat_response.export_analysis_results(proc_name, results)
                 self.log_func(f"Process {proc_name}-{pid} is suspicious (Score: {threat_score})", "CRITICAL")
@@ -636,7 +628,7 @@ class Analyzer:
                         self.threat_response.quarantine_file(file_path)
                     type_ = info.get('type', 'unknown')
                     if type_ == 'office':
-                        self.threat_response.remove_vba_macro(file_path)
+                        await self.threat_response.remove_vba_macro(file_path)
 
             self.log_func(f"Starting traceback for process ID: {trace_id}", "TRACE")
             for process_id, info in self.watchlist.watchlist_process.items():

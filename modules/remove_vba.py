@@ -3,16 +3,13 @@ import os
 import shutil
 import json
 
-# Function to extract the contents of a zip file
-import zipfile
-import os
-import shutil
 
 def clean_office_macro(input_path):
     # Tách phần tên file và phần mở rộng
     base_name, ext = os.path.splitext(os.path.basename(input_path))
     temp_folder = f"{base_name}_extracted"
-    output_file = f"{base_name}_clean{ext}"
+    output_file = input_path.replace(ext, f"_clean{ext}")
+
 
     # Bước 1: Giải nén file Office như zip (không cần đổi tên)
     if os.path.exists(temp_folder):
@@ -49,9 +46,11 @@ def clean_office_macro(input_path):
     shutil.rmtree(temp_folder)
 
     print(f"[+] Đã tạo file sạch macro: {output_file}")
+    return True, output_file
 
+# # Mô-đun này cung cấp chức năng xóa macro VBA khỏi các tài liệu Office.
 # # Ví dụ sử dụng
-# if _name_ == "_main_":
+# if __name__ == "__main__":
 #     # arg to input file
 #     import sys
 #     if len(sys.argv) != 2:

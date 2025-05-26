@@ -5,14 +5,16 @@ import shutil
 import subprocess
 from modules.remove_vba import clean_office_macro
 import json
+import trio
 
 class ThreatResponse:
     """Handles automated responses to detected threats."""
     
-    def __init__(self, log_func, log_dir):
+    def __init__(self, log_func, log_dir, parser):
         self.log_func = log_func
-        self.quarantine_dir =   os.path.join(log_dir, "Quarantine")
+        self.quarantine_dir = os.path.join(log_dir, "Quarantine")
         os.makedirs(self.quarantine_dir, exist_ok=True)
+        self.parser = parser
 
     def quarantine_file(self, file_path):
         """Move a suspicious file to the quarantine directory."""
@@ -20,10 +22,10 @@ class ThreatResponse:
             dest_path = os.path.join(self.quarantine_dir, os.path.basename(file_path) + f".quarantine_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
             shutil.move(file_path, dest_path)
             self.log_func(f"Quarantined file: {file_path} to {dest_path}", "ALERT")
-            return True, dest_path
+      
         except Exception as e:
             self.log_func(f"Failed to quarantine {file_path}: {str(e)}", "ERROR")
-            return False, str(e)
+    
 
     def terminate_process(self, pid_or_file, type_="pid"):
         """Terminate a suspicious process."""
@@ -40,10 +42,10 @@ class ThreatResponse:
                     proc.terminate()
                     self.log_func(f"Terminated process PID {handle['pid']}", "ALERT")
 
-            return True, f"Terminated PID {pid}"
+     
         except (psutil.NoSuchProcess, psutil.AccessDenied) as e:
             self.log_func(f"Failed to terminate PID {pid}: {str(e)}", "ERROR")
-            return False, str(e)
+     
 
 
     def block_ip(self, ip_address):
@@ -53,20 +55,24 @@ class ThreatResponse:
             cmd = ["netsh", "advfirewall", "firewall", "add", "rule", f"name={rule_name}", "dir=out", "action=block", f"remoteip={ip_address}"]
             subprocess.run(cmd, check=True)
             self.log_func(f"Blocked IP {ip_address} with firewall rule {rule_name}", "ALERT")
-            return True, f"Blocked IP {ip_address}"
+    
         except subprocess.CalledProcessError as e:
             self.log_func(f"Failed to block IP {ip_address}: {str(e)}", "ERROR")
-            return False, str(e)
-            
-    def remove_vba_macro(self, file_path):
+     
+    async def remove_vba_macro(self, file_path):
         """Remove VBA macros from an Office document."""
         try:
-            clean_office_macro(file_path)
-            self.log_func(f"Removed VBA macros from {file_path}", "ALERT")
-            return True, f"Removed VBA macros from {file_path}"
+            x = clean_office_macro(file_path)
+            res, path = x
+            if not res:
+                self.log_func(f"Failed to remove VBA macros from {file_path}: {path}", "ERROR")
+                return
+            self.quarantine_file(file_path)
+            self.log_func(f"Removed VBA macros from {file_path} -> {path}", "ALERT")
+          
         except Exception as e:
             self.log_func(f"Failed to remove VBA macros from {file_path}: {str(e)}", "ERROR")
-            return False, str(e)
+         
 
     def export_analysis_results(self, file_path, results):
         """Export analysis results to a file."""
