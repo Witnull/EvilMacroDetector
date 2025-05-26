@@ -1,45 +1,20 @@
-import asyncio
-import hashlib
-import io
-import json
 import json5
 import logging
-import magic
-import matplotlib.pyplot as plt
-import networkx as nx
 import os
-import pefile
 import psutil
 import re
-import subprocess
-import sys
 import time
-import trio
 
-import xml.etree.ElementTree as ET
-from aioresult import ResultCapture
 from datetime import datetime
-from scapy.all import sniff, IP, TCP, UDP, wrpcap,DNS, DNSQR, Raw
+from scapy.all import  IP, TCP, UDP
 from scapy.main import load_layer
+import trio
 load_layer("tls")
 from scapy.layers.tls.record import TLS
 from queue import Queue
-import threading
-# Prevent errors from being printed to the console
-sys.stderr = sys.stderr or io.StringIO()
-sys.stdout = sys.stdout or io.StringIO()
-# OLE related imports
-import oletools
-from oletools.olevba import VBA_Parser, VBA_Scanner
-from oletools.msodde import process_file as extract_dde
 
-# Local modules
-from modules.blacklist import Blacklist
-from modules.watchlist import Watchlist
-from modules.deobfuscator import deobfuscator
 from modules.parser import Parser
 from modules.threat_response import ThreatResponse
-from modules.watchlist import Watchlist
 
 
 
@@ -136,19 +111,22 @@ class Analyzer:
 
         return dll_results, threat_score
 
-    async def _analyzing_suspicious_handle(handle_info):
+    async def _analyzing_suspicious_handle(self, handle_info):
         results ={}
         threat_score = 0
-        for handle_info in handle_output.get('suspicious_process', []):
+        pid = handle_info['pid']
+        for handle_info in self.handle_output.get('suspicious_process', []):
             self.logger.info(f"Process {pid} is accessed by suspicious process {handle_info['Process']}")
-            dlls_results , dll_score = await self._analyzing_dlls(handle_info['pid'])
+            res = await self._analyzing_dlls(handle_info['pid'])
+            dlls_results , dll_score = res
             threat_score += dll_score 
             self.parser.merge_dicts(results, dlls_results)
 
-        for handle_info in handle_output.get('suspicious_system_process', []):
+        for handle_info in self.handle_output.get('suspicious_system_process', []):
             self.logger.info(f"Process {pid} is accessed by SYSTEM suspicious process {handle_info['Process']}")
             self.log_func(f"Process {pid} is accessed by SYSTEM suspicious process {handle_info['Process']}", "CRITICAL")
-            dlls_results , dll_score = await self._analyzing_dlls(handle_info['pid'])
+            res =  await self._analyzing_dlls(handle_info['pid'])
+            dlls_results , dll_score = res
             threat_score += dll_score 
             self.parser.merge_dicts(results, dlls_results)
         return results, threat_score
@@ -186,11 +164,12 @@ class Analyzer:
 
             self.logger.info(f"Analyzing Office file: {file_path}")
 
-            has_suspicious_macro, macro_results = self.parser.check_macros(file_path)
+            res = await self.parser.check_macros(file_path)
+            has_suspicious_macro, macro_results = res
             threat_score += macro_results.get('threat_score', 0)
             self.parser.merge_dicts(results, macro_results)
 
-            res = self.parser.check_handles(file_path)
+            res = await self.parser.check_handles(file_path)
             has_suspicious_handle, handle_output = res
             threat_score += handle_output.get('threat_score', 0)
             self.parser.merge_dicts(results, handle_output)
@@ -208,25 +187,12 @@ class Analyzer:
                 - If any suspicious processes in Handle are found, analyze their DLLs for further threats.
                 - Check in current watchlist 
             """
-
-             # Check dlls
-            has_suspicious_dll, dll_results = self.parser.check_dlls(file_path)
-            threat_score += dll_results.get('threat_score', 0)
-            self.parser.merge_dicts(results, dll_results)
-            if has_suspicious_dll:
-                for dll in dll_results.get('suspicious_dlls', []):
-                    self.watchlist.add_process(proc_info.pid, dll)
-                    self.logger.info(f"Process {proc_info.pid} is accessing suspicious DLL: {dll['path']}")
-                    self.log_func(f"Process {proc_info.pid} is accessing suspicious DLL: {dll['path']}", "CRITICAL")
-                    threat_score += self.scoring.get('suspicious_dll', 30)
-
-
             if macro_results.get('has_macros', False) or has_suspicious_macro: 
                 # Check Handle exist then file is being used ;
                 # Can only check parent proc - not that useful
                 # if the file is accessed by any suspicious processes, then  further analyze their dlls
                 if has_suspicious_handle:
-                    res = self._analyzing_suspicious_handle(handle_output)
+                    res = await self._analyzing_suspicious_handle(handle_output)
                     suspicious_handle_results, dll_score = res
                     threat_score += dll_score
                     self.parser.merge_dicts(results, suspicious_handle_results)
@@ -304,7 +270,7 @@ class Analyzer:
             self.parser.merge_dicts(results, handle_output)
 
             if has_suspicious_handle: # then the file is being used by some process and in watchlist
-                res = self._analyzing_suspicious_handle(handle_output)
+                res = await self._analyzing_suspicious_handle(handle_output)
                 suspicious_handle_results, dll_score = res
                 threat_score += dll_score
                 self.parser.merge_dicts(results, suspicious_handle_results)
@@ -341,7 +307,7 @@ class Analyzer:
                 return False, 'excluded', self.scoring.get('excluded', 0)
 
             # Hash to check if already checked
-            file_hash = await self.parser.hash_file_md5(file_path)
+            file_hash = await trio.to_thread.run_sync(self.parser.hash_file_md5, file_path)
             if file_hash in list(self.watchlist.watchlist_file.keys()):
                 self.log_func(f"File {file_path} already analyzed, skipping", "IGNORED")
                 return
@@ -386,7 +352,7 @@ class Analyzer:
                     self.logger.critical(f"File {file_path} is dangerous (Score: {threat_score})")
                     results['response'] = "Quarantined/Neutralized"
                     self.watchlist.add_file(file_hash, file_path, results)
-                    if results.has_key('handle_output') and results['handle_output']:
+                    if 'handle_output' in results and results['handle_output']:
                         self.threat_response.terminate_process(results['handle_output'], "handle")
                         if file_type == "office":
                             self.threat_response.remove_vba_macro(file_path)
@@ -404,14 +370,14 @@ class Analyzer:
             self.log_func(f"Analysis failed for {file_path}: {str(e)}", "ERROR")
             return is_suspicious, results
 
-    def is_ip_suspicious(self, ip, port):
+    def is_ip_suspicious(self, proc_name, ip, port):
         if ip in self.exclusions.get('ip', []) or port in self.exclusions.get('ports', []):
             self.logger.info(f"IP {ip} or port {port} is in exclusion list, skipping analysis")
             self.log_func(f"IP {ip} or port {port} is in exclusion list, skipping analysis", "IGNORED")
             return False
         if ip in self.suspicious_ip or port in self.suspicious_ports or ip in list(self.watchlist.watchlist_ip.keys()):
-            self.log_func(f"Process {proc_name}-{pid} has suspicious connection to {raddr} on port {conn.raddr.port}", "CRITICAL")
-            self.logger.critical(f"Process {proc_name}-{pid} has suspicious connection to {raddr} on port {conn.raddr.port}")
+            self.log_func(f"Process {proc_name} has suspicious connection to {ip}-{port}", "CRITICAL")
+            self.logger.critical(f"Process {proc_name} has suspicious connection to {ip}-{port}")
             return True
         return False
 
@@ -448,22 +414,22 @@ class Analyzer:
             results['process_name'] = proc_name
 
 
-            exe_path = proc.exe()
-            if any(exe_path.lower().startswith(folder.lower()) for folder in self.exclusions.get('folders', [])):
-                #self._log(f"Skipping process in excluded folder: {exe_path} (PID: {pid})", "DEBUG")
-                return is_suspicious, results
-            results['exe_path'] = exe_path
-
             cmdline =  ' '.join(proc.cmdline()) if proc.cmdline() else ''
             if cmdline and any(pattern.search(cmdline[0]) for pattern in self.exclude_command_pattern_regexes):
                 self.logger.info(f"Process {proc_name}-{pid} command line matches exclusion patterns, skipping analysis")
                 self.log_func(f"Process {proc_name}-{pid} command line matches exclusion patterns, skipping analysis", "IGNORED")
                 return is_suspicious, results
             results['cmdline'] = cmdline
+            self.log_func(f"Process {proc_name}-{pid} is running cmd: {cmdline}","WARN")
+            self.logger.warn(f"Process {proc_name}-{pid} is running cmd: {cmdline}")
 
             user = proc.username()
-            connections = proc.connections(kind='inet')
-            conn_info_list = []
+            if "system" in user.lower():
+                self.logger.info(f"Process {proc_name}-{pid} is running as SYSTEM")
+                self.log_func(f"Process {proc_name}-{pid} is running as SYSTEM","INFO")
+                threat_score += self.scoring.get('system_process', 20)
+
+            connections = proc.net_connections(kind='inet')
             for conn in connections:
                 # Safely extract raddr info
                 if conn.raddr:
@@ -471,9 +437,7 @@ class Analyzer:
                         r_ip, r_port = conn.raddr
                     else:
                         r_ip, r_port = conn.raddr.ip, conn.raddr.port
-                    raddr = f"{r_ip}:{r_port}"
                 else:
-                    raddr = "N/A"
                     r_ip, r_port = None, None
 
                 # Similarly for laddr
@@ -482,9 +446,7 @@ class Analyzer:
                         l_ip, l_port = conn.laddr
                     else:
                         l_ip, l_port = conn.laddr.ip, conn.laddr.port
-                    laddr = f"{l_ip}:{l_port}"
                 else:
-                    laddr = "N/A"
                     l_ip, l_port = None, None
 
                 # conn_info = {
@@ -494,20 +456,20 @@ class Analyzer:
                 #     'family': socket.AddressFamily(conn.family).name,
                 #     'type': socket.SocketKind(conn.type).name
                 # }
-                if r_ip and self.is_ip_suspicious(r_ip, r_port):
+                if r_ip and self.is_ip_suspicious(proc_name,r_ip, r_port):
                     is_suspicious = True
                     threat_score += self.scoring.get('suspicious_connection', 30)
                     results['suspiscious_ip'].append(r_ip)
                     results['suspicious_ports'].append(r_port)
 
-                if l_ip and self.is_ip_suspicious(l_ip, l_port):
+                if l_ip and self.is_ip_suspicious(proc_name,l_ip, l_port):
                     is_suspicious = True
                     threat_score += self.scoring.get('suspicious_connection', 30)
                     results['suspiscious_ip'].append(l_ip)
                     results['suspicious_ports'].append(l_port)
             
                       
-            self.log_func(f"Process {proc_name}-{pid} is running cmd: {cmdline}","WARN")
+            
             if len(connections) > 0:
                 for cmd in self.suspicious_commands:
                     if cmd in cmdline:
@@ -526,14 +488,17 @@ class Analyzer:
 
             # # Child Processes
             # child_processes = []
-            # if  is_child == False:
+            # if not is_child:
             #     try:
-            #         children = proc_info.children(recursive=True)
-            #         for child in children:
-            #             x = await self.analyze_process(child.pid, is_child = True)
-            #             is_suspicious, results = x
-            #             child_processes.append(results)
-            #     except:
+            #         children = proc.children(recursive=True)
+            #         async with trio.open_nursery() as nursery:
+            #             results_list = []
+            #             for child in children:
+            #                 nursery.start_soon(
+            #                     lambda c=child: results_list.append(self.analyze_process(c.pid, is_child=True))
+            #                 )
+            #         # Now results_list contains all child results
+            #     except Exception:
             #         child_processes = [{'error': 'Unable to access child processes'}]
 
             if  is_child == False:
@@ -542,7 +507,7 @@ class Analyzer:
                 threat_score += handle_output.get('threat_score',0)
                 self.parser.merge_dicts(results, handle_output)
                 if has_suspicious_handle:
-                    res = self._analyzing_suspicious_handle(handle_output)
+                    res = await self._analyzing_suspicious_handle(handle_output)
                     suspicious_handle_results, dll_score = res
                     threat_score += dll_score
                     self.parser.merge_dicts(results, suspicious_handle_results)
@@ -613,14 +578,14 @@ class Analyzer:
         """Process network packets, logging suspicious Office-related traffic."""
         benchmark_start = time.time()
         try:
-
+           
             if IP in packet:
-               
                 src_ip = packet[IP].src
                 dst_ip = packet[IP].dst
                 proto = "TCP" if TCP in packet else "UDP" if UDP in packet else "Unknown"
                 src_port = packet[TCP].sport if TCP in packet else packet[UDP].sport if UDP in packet else 0
                 dst_port = packet[TCP].dport if TCP in packet else packet[UDP].dport if UDP in packet else 0
+                
                 if packet.haslayer("Raw"):
                     payload = packet["Raw"].load.decode(errors='ignore')
                     if any(x in payload.lower() for x in ["get", "post","user-agent"]):
@@ -641,8 +606,9 @@ class Analyzer:
                                     "dst_port": dst_port,
                                     "response": "Monitored"
                                 }
-                        self.log_func(f"Packet encoded: {self._is_encoded_payload(payload.strip())}", "NET")
-                        if self._is_encoded_payload(payload.strip()):
+                        is_encoded = self._is_encoded_payload(payload.strip())
+                        self.log_func(f"Packet encoded: {is_encoded}", "NET")
+                        if is_encoded:
                             self._log(f"Network: {proto} {src_ip}:{src_port} -> {dst_ip}:{dst_port}", "WARN")
                             self._log(f"Potential C2 communication detected: {payload[:70]}", "CRITICAL")
                             if src_ip not in self.exclusions.get('ips', []):
@@ -653,7 +619,7 @@ class Analyzer:
                                     "response": "Blocked"
                                     }
                                 self.threat_response.block_ip(src_ip)
-                                #self.watchlist.compile_target_informations({"ip": src_ip})
+                                self.watchlist.compile_target_informations({"ip": src_ip})
 
                             else:
                                 self.watchlist.watchlist_ip[dst_ip] = {
@@ -663,11 +629,11 @@ class Analyzer:
                                     "response": "Blocked"
                                 }
                                 self.threat_response.block_ip(dst_ip)
-                                #self.watchlist.compile_target_informations({"ip": dst_ip})
+                                self.watchlist.compile_target_informations({"ip": dst_ip})
 
 
             self.log_func("Function analyze_packet completed in {:.3f} seconds".format(time.time() - benchmark_start), "BM")
         except Exception as e:
             self._log(f"Packet processing error: {str(e)}", "ERROR")
 
-    
+

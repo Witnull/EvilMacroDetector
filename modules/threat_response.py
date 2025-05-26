@@ -25,16 +25,16 @@ class ThreatResponse:
             self.log_func(f"Failed to quarantine {file_path}: {str(e)}", "ERROR")
             return False, str(e)
 
-    def terminate_process(self, pid, type_="pid"):
+    def terminate_process(self, pid_or_file, type_="pid"):
         """Terminate a suspicious process."""
         try:
             if type_ == "pid":
-                pid = pid_of_file
+                pid = pid_or_file
                 proc = psutil.Process(pid)
                 #proc.terminate()
                 self.log_func(f"Terminated process PID {pid}", "ALERT")
             elif type_ == "handle":
-                handles = pid
+                handles = pid_or_file
                 for handle in handles:
                     proc = psutil.Process(handle['pid'])
                     #proc.terminate()

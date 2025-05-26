@@ -1,6 +1,7 @@
 from datetime import datetime
 import os
 import json
+from queue import Queue
 import sys
 import trio
 import asyncio
@@ -37,8 +38,10 @@ class Watchlist:
         self.summary_interval = timedelta(seconds=5)
         self.save_interval = timedelta(seconds=15)
         self.max_entry_age = timedelta(hours=24)  # Cleanup entries older than 24 hours
-        self.lock = trio.Lock()  # For thread-safe updates
-
+        self._save_queue = Queue(1)
+        self._save_lock = trio.Lock()
+        self._save_worker_started = False
+      
     async def generate_summary_process(self, pid, force=False):
         """Generate a summary for a process, updating incrementally."""
         
@@ -189,11 +192,13 @@ class Watchlist:
         self.log_func("Cleaned up old entries", "WATCHLIST")
         await self.save_to_json()
 
-    async def save_to_json(self, force=False):
-        """Save watchlist and summaries to JSON files asynchronously."""
+    async def _save_worker(self):
+        while True:
+            await self._save_queue.get()
+            async with self._save_lock:
+                await self._do_save_to_json()
 
-        if not force and (datetime.now() - self.last_saved).total_seconds() < self.save_interval.total_seconds():
-            return
+    async def _do_save_to_json(self):
         try:
             async with trio.open_file(self.file_path + "process.json", "w") as f:
                 await f.write(json.dumps(self.watchlist_process))
@@ -206,10 +211,14 @@ class Watchlist:
         except Exception as e:
             self.log_func(f"Error saving watchlist to JSON: {e}", "ERROR")
 
-    def is_file_in_watchlist(self, file_hash):
-        """Check if a file is in the watchlist."""
-        with self.lock:
-            return file_hash in self.watchlist_file
+    async def save_to_json(self, force=False):
+        if not force and (datetime.now() - self.last_saved).total_seconds() < self.save_interval.total_seconds():
+            return
+        # Start the save worker if not already started
+        if not self._save_worker_started:
+            trio.lowlevel.spawn_system_task(self._save_worker)
+            self._save_worker_started = True
+        await self._save_queue.put(True)
 
     async def compile_target_informations(self, target_info):
         """

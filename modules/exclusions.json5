@@ -19,6 +19,8 @@
     
     "folders" : [
         "C:\\Users\\null\\Downloads\\CCMD_DA",
+        "C:\\Users\\null\\Downloads\\OneDrive_1_5-7-2025",
+        "C:\\Users\\null\\Downloads\\IDAPro6.6full",
         "C:\\Program Files (x86)",
         "C:\\$Recycle.Bin",
         "C:\\Program Files",
@@ -40,8 +42,8 @@
         "pip",
         "Packages",
         ".matplotlib",
-        "Visual Studio 2022",
-        "IDAPro6.6full"
+        "Visual Studio 2022"
+       
     ],
     "processes": [
         "trusted.exe"

@@ -6,4 +6,5 @@ VBA
 *.xlsm
 not_important
 daccmd
-t_*.*
+t_*
+sample

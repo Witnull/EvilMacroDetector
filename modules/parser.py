@@ -7,14 +7,9 @@ import io
 import json
 import json5
 import re
-import asyncio
-import psutil
-import xml.etree.ElementTree as ET
-import uuid
 import magic
 import pefile
 import logging
-import networkx as nx
 import hashlib
 import matplotlib.pyplot as plt
 # Prevent errors from being printed to the console
@@ -25,11 +20,7 @@ import oletools
 from oletools.olevba import VBA_Parser, VBA_Scanner
 from oletools.msodde import process_file as extract_dde
 import trio
-from aioresult import ResultCapture
 from modules.deobfuscator import deobfuscator
-from modules.blacklist import Blacklist
-from modules.watchlist import Watchlist
-from modules.threat_response import ThreatResponse
 
 # Define Office file extensions
 word = ['doc', 'docx', 'docm', 'dot', 'dotx', 'docb', 'dotm']
@@ -115,7 +106,7 @@ class Parser:
 
                 # Same type: merge logic
                 if isinstance(base_val, dict) and isinstance(value, dict):
-                    merge_dicts(base_val, value)  # recursive merge
+                    self.merge_dicts(base_val, value)  # recursive merge
                 elif isinstance(base_val, list) and isinstance(value, list):
                     # Fast set union (no order guaranteed)
                     base[key] = list(set(base_val).union(value))
@@ -396,7 +387,7 @@ class Parser:
                         self.log_func(f"NT AUTHORITY- SYSTEM process {handle_info['process']} accessing {str(file_path_or_pid)}" , "CRITICAL")
                         results['threat_score'] += self.scoring.get('handle_suspicious_system_process', 30)
                         results['handle_suspicious_system_process'].append(handle_info)
-                        self.watchlist.add_process(handle_info['pid'], handle_info)
+                        await self.watchlist.add_process(handle_info['pid'], handle_info)
 
             self.log_func(f"Handle check completed for {str(file_path_or_pid)} in {time.time() - benchmark_start:.2f} seconds","BM")
             return is_suspicious , results
@@ -615,28 +606,29 @@ class Parser:
 
     def check_sysmon_events(self, file_path):
         """Check Sysmon logs for events related to the file."""
-        try:
+        pass
+        # try:
 
-            # #cmd = ['wevtutil', 'qe', 'Microsoft-Windows-Sysmon/Operational', '/q:*[System[(EventID=1)]]', '/c:10', '/rd:true', '/f:xml']
-            # #result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-            # xml_output = ""#result.stdout
-            # root = ET.fromstring(f"<Events>{xml_output}</Events>")
-            # for event in root.findall('.//Event'):
-            #     data = event.findall('.//Data')
-            #     for d in data:
-            #         if d.get('Name') == 'Image' and file_path.lower() in d.text.lower():
-            #             self.logger.warning(f"Sysmon event detected for {file_path}: {ET.tostring(event, encoding='unicode')}")
-            #             return True, ET.tostring(event, encoding='unicode')
-            # self.logger.info(f"Sysmon event check {results}")
+        #     # #cmd = ['wevtutil', 'qe', 'Microsoft-Windows-Sysmon/Operational', '/q:*[System[(EventID=1)]]', '/c:10', '/rd:true', '/f:xml']
+        #     # #result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        #     # xml_output = ""#result.stdout
+        #     # root = ET.fromstring(f"<Events>{xml_output}</Events>")
+        #     # for event in root.findall('.//Event'):
+        #     #     data = event.findall('.//Data')
+        #     #     for d in data:
+        #     #         if d.get('Name') == 'Image' and file_path.lower() in d.text.lower():
+        #     #             self.logger.warning(f"Sysmon event detected for {file_path}: {ET.tostring(event, encoding='unicode')}")
+        #     #             return True, ET.tostring(event, encoding='unicode')
+        #     # self.logger.info(f"Sysmon event check {results}")
 
-            return False, "No Sysmon events found"
-        except (subprocess.CalledProcessError, ET.ParseError) as e:
-            self.logger.error(f"Sysmon event check failed: {str(e)}")
-            self.log_func(f"Sysmon event check failed: {str(e)}", "ERROR")
-            return False, str(e)
+        #     return False, "No Sysmon events found"
+        # except (subprocess.CalledProcessError, ET.ParseError) as e:
+        #     self.logger.error(f"Sysmon event check failed: {str(e)}")
+        #     self.log_func(f"Sysmon event check failed: {str(e)}", "ERROR")
+        #     return False, str(e)
 
    
-    def check_macros(self, file_path):
+    async def check_macros(self, file_path):
 
         """Analyze macros in Office files using oletools (olevba).
         Args:
@@ -715,7 +707,7 @@ class Parser:
 
                 # Deobfuscate macros if present
                 if olevba_analyse_results.get('vba_obfuscated', False):
-                    deobufus_await = trio.run(self.deobfuscate_macros, file_path)
+                    deobufus_await = await self.deobfuscate_macros(file_path)
                     has_deobfuscated, deobfuscation_results = deobufus_await
                     threat_score += deobfuscation_results.get('threat_score', 0)
                     self.merge_dicts(results, deobfuscation_results)
