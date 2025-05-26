@@ -10,16 +10,17 @@ import re
 import magic
 import pefile
 import logging
-import hashlib
-import matplotlib.pyplot as plt
 # Prevent errors from being printed to the console
 sys.stderr = sys.stderr or io.StringIO()
 sys.stdout = sys.stdout or io.StringIO()
 
-import oletools
 from oletools.olevba import VBA_Parser, VBA_Scanner
 from oletools.msodde import process_file as extract_dde
-import trio
+
+from pathlib import Path
+from functools import lru_cache
+import os
+
 from modules.deobfuscator import deobfuscator
 
 # Define Office file extensions
@@ -32,6 +33,49 @@ ppt = ['ppt', 'pptx', 'pptm', 'pot', 'pps', 'potx', 'potm', 'ppam', 'ppsx', 'sld
 Class Parser - def check_* - like parser - extract important information 
 Class Analyze - def analyze_* - the detect , correlations 
 """
+
+
+@lru_cache(maxsize=1)
+def get_all_system_files():
+    """
+    Retrieve a list of all file names in System32 and SysWOW64 directories.
+    
+    Returns:
+        list: A sorted list of file names (without paths) for all files.
+        
+    Notes:
+        - Includes all file extensions (e.g., .dll, .exe, .sys, .ini, etc.).
+        - Skips inaccessible files or directories.
+        - Uses lru_cache to cache results for subsequent calls.
+        - Works on both 32-bit and 64-bit Windows systems.
+        - File names are stored in lowercase for case-insensitive comparisons.
+    """
+
+    # Define directories
+    system32_path = Path(os.environ.get('SystemRoot', r'C:\Windows')) / 'System32'
+    syswow64_path = Path(os.environ.get('SystemRoot', r'C:\Windows')) / 'SysWOW64'
+    winsxs_path = Path(os.environ.get('SystemRoot', r'C:\Windows')) / 'WinSxS'
+    
+    # Initialize set for file names to avoid duplicates
+    files = set()
+    # Function to collect files from a directory
+    def collect_files(directory):
+        try:
+            for file_path in directory.glob('*'):
+                try:
+                    if file_path.is_file():  # Ensure it's a file, not a directory or symlink
+                        files.add(file_path.name.lower())  # Store name only, case-insensitive
+                except (PermissionError, OSError):
+                    continue  # Skip files we can't access
+        except (PermissionError, FileNotFoundError, OSError):
+            pass  # Skip inaccessible or missing directories
+    
+    # Collect from System32 and SysWOW64
+    collect_files(system32_path)
+    collect_files(syswow64_path)
+    collect_files(winsxs_path)
+    
+    return list(files)  # Return sorted list for consistency
 
 class Parser:
     def __init__(self, sysinternals_path, log_dir, blacklist, watchlist, log_func):
@@ -69,8 +113,9 @@ class Parser:
         self.load_mime_map()
         self.load_scoring_config()
 
-        # Cache for tool results
-        self.cache = {}
+        self.system_files = get_all_system_files()
+        self.logger.info(f"System files loaded: {len(self.system_files)} entries")
+
 
     def _setup_logger(self):
         """Set up logging with DEBUG level and file handler."""
@@ -82,6 +127,7 @@ class Parser:
         handler.setFormatter(formatter)
         logger.addHandler(handler)
         return logger
+
 
     def load_mime_map(self):
         """Load MIME type mappings from JSON file."""
@@ -267,7 +313,7 @@ class Parser:
             self.log_func(f"Permission denied for {file_path}")
             return False
         except FileNotFoundError:
-            self.log_func(f"File not found: {file_path}")
+            self.log_func(f"Sig check failed! File not found: {file_path}")
             return False
         except Exception as e:
             self.log_func(f"Sigcheck failed for {file_path}: {str(e)} Considered as no sig", "ERROR")
@@ -362,12 +408,11 @@ class Parser:
         results = {
                     'handle_output': [],
                     'handle_suspicious_process': [],
-                    'handle_suspicious_system_process': [],
-                    'threat_score': 0,
                     }
         is_suspicious = False
+        threat_score = 0
         try:
-            
+
             cmd = [self.handle_exe, "-nobanner", "-accepteula", "-a", "-u", "-v", "-g", str(file_path_or_pid)]
             result = subprocess.run(cmd, capture_output=True, text=True, check=True)
             output = result.stdout
@@ -376,19 +421,14 @@ class Parser:
             results['handle_output'] = parsed_output
 
             for handle_info in parsed_output:
-                file_hash = await self.hash_file_md5(handle_info.get('name', ''))
-                if self.watchlist.is_file_in_watchlist(file_hash):
+                is_in_wlist = await self.watchlist.is_file_in_watchlist(handle_info['name'])
+                if is_in_wlist:
                     self.logger.warning(f"Watchlist file access detected: {handle_info['name']}")
                     is_suspicious = True
                     results['handle_suspicious_process'].append(handle_info)
-                    results['threat_score'] += self.scoring.get('suspicious_handle', 30)
-                    if handle_info.get('user', '').lower() == "nt authority\\system":
-                        self.logger.warning(f"NT AUTHORITY\\SYSTEM process {handle_info['process']} accessing {str(file_path_or_pid)}")
-                        self.log_func(f"NT AUTHORITY- SYSTEM process {handle_info['process']} accessing {str(file_path_or_pid)}" , "CRITICAL")
-                        results['threat_score'] += self.scoring.get('handle_suspicious_system_process', 30)
-                        results['handle_suspicious_system_process'].append(handle_info)
-                        await self.watchlist.add_process(handle_info['pid'], handle_info)
+                    threat_score += self.scoring.get('suspicious_handle', 30)
 
+            results['threat_score'] = threat_score
             self.log_func(f"Handle check completed for {str(file_path_or_pid)} in {time.time() - benchmark_start:.2f} seconds","BM")
             return is_suspicious , results
         except subprocess.CalledProcessError as e:
@@ -402,34 +442,7 @@ class Parser:
             self.log_func(f"Handle check failed for {str(file_path_or_pid)}: {str(e)} maybe this file not running", "ERROR")
             return is_suspicious, results
     
-    async def hash_file_md5(self, file_path):
-        """
-        Calculate MD5 hash of a file.
-        
-        Args:
-            file_path (str): Path to the file to be hashed
-            
-        Returns:
-            str: Hexadecimal MD5 hash of the file
-            
-        Raises:
-            FileNotFoundError: If the file doesn't exist
-            IOError: If there's an error reading the file
-        """
-        md5_hash = hashlib.md5()
-        try:
-            with open(file_path, 'rb') as file:
-                chunk = await trio.to_thread.run_sync(file.read, 4096)
-                while chunk:
-                    md5_hash.update(chunk)
-                    chunk = await trio.to_thread.run_sync(file.read, 4096)
-            return md5_hash.hexdigest()
-        except FileNotFoundError:
-            raise FileNotFoundError(f"File not found: {file_path}")
-        except IOError as e:
-            raise IOError(f"Error reading file {file_path}: {str(e)}") 
-
-
+   
     def _parse_listdlls_output(self, output):
         """Parse listdlls output and return structured data"""
         dlls = []
@@ -472,6 +485,8 @@ class Parser:
                     # Parse various property lines
                     if prop_line.startswith('Verified:'):
                         dll_info['verified'] = prop_line.replace('Verified:', '').strip()
+                        if dll_info['verified'].lower() == 'Signed':
+                           continue  # Skip signed DLLs for suspicious checks
                     elif prop_line.startswith('Publisher:'):
                         dll_info['publisher'] = prop_line.replace('Publisher:', '').strip()
                     elif prop_line.startswith('Description:'):
@@ -501,10 +516,8 @@ class Parser:
                             ).isoformat()
                         except ValueError:
                             # Keep original string if parsing fails
-                            dll_info['create_time_parsed'] = create_time_str
-                    
-                    i += 1
-                
+                            dll_info['create_time_parsed'] = create_time_str              
+                    i += 1 
                 dlls.append(dll_info)
             else:
                 i += 1
@@ -539,7 +552,7 @@ class Parser:
         is_suspicious = False
 
         try:
-            cmd = [self.listdlls_exe, '-accepteula', '-u', '-nobanner', str(pid)]
+            cmd = [self.listdlls_exe, '-accepteula', '-nobanner', str(pid)]
             result = subprocess.run(cmd, capture_output=True, text=True, check=True)
             output = result.stdout
             parsed_output = self._parse_listdlls_output(output)
@@ -566,32 +579,27 @@ class Parser:
                             for p in ['System32', 'SysWOW64']]
 
             for dll in dlls:
+                results['threat_score'] += self.scoring.get('unsigned_file', 30) # due to all file endup here is unsigned
+
                 dll_path = dll['path']
                 dll_name = os.path.basename(dll_path).lower()
                 if dll_name in self.suspicious_dlls:
                     self.logger.warning(f"Suspicious DLL name: {dll_name}")
-                    dll['is_suspicious'] = True
                     is_suspicious = True
                     results['suspicious_dlls'].append(dll)
                     results['threat_score'] += self.scoring.get('suspicious_dll', 30)
 
-
                 dll_dir = os.path.normpath(os.path.dirname(dll_path)).lower()
                 if not any(dll_dir.startswith(sys_path) for sys_path in system_paths):
-                    self.logger.warning(f"DLL from non-system path: {dll_path}")
-                    dll['is_suspicious'] = True
-                    dll['reason'] = 'Non-system path'
+                    self.logger.warning(f" File from non-system path: {dll_path}")
                     is_suspicious = True
                     results['suspicious_dlls'].append(dll)
                     results['threat_score'] += self.scoring.get('non_system_dll', 30)
-
-                if dll.get('verified').lower() == 'unsigned':
-                    self.logger.warning(f"Unsigned DLL: {dll_path}")
-                    dll['is_suspicious'] = True
-                    dll['reason'] = 'Unsigned'
-                    is_suspicious = True
-                    results['suspicious_dlls'].append(dll)
-                    results['threat_score'] += self.scoring.get('unsigned_file', 30)
+                    if dll_name in self.system_files:
+                        self.logger.warning(f"Suspicious duplicate DLL from system files: {dll_name}")
+                        is_suspicious = True
+                        results['suspicious_dlls'].append(dll)
+                        results['threat_score'] += self.scoring.get('system_file_dll', 50)
 
             self.log_func(f"ListDLLs check completed for PID {pid} in {time.time() - benchmark_start:.2f} seconds","BM")
             return is_suspicious, results
@@ -706,14 +714,15 @@ class Parser:
                 self.merge_dicts(results,olevba_analyse_results)
 
                 # Deobfuscate macros if present
-                if olevba_analyse_results.get('vba_obfuscated', False):
-                    deobufus_await = await self.deobfuscate_macros(file_path)
+                if results.get('vba_obfuscated', False):
+                    deobufus_await = self.deobfuscate_macros(file_path)
                     has_deobfuscated, deobfuscation_results = deobufus_await
                     threat_score += deobfuscation_results.get('threat_score', 0)
+                    is_suspicious = True
                     self.merge_dicts(results, deobfuscation_results)
 
                 results['threat_score'] =  threat_score
-
+                return is_suspicious, results
             except PermissionError as e:
                 return is_suspicious, results
             except FileNotFoundError as e:
@@ -794,8 +803,8 @@ class Parser:
         """
         results = {
             'deobfuscated_macro': {},
-            'threat_score': 0,
         }
+        threat_score = 0
         try:
             self.logger.info(f"Begin deobfuscate {file_path}")
 
@@ -810,6 +819,7 @@ class Parser:
             results['deobfuscated_macro'] = content
             threat_score += olevba_analyse_results['threat_score']
             self.merge_dicts(results, olevba_analyse_results)
+
             results['threat_score'] = threat_score
             return True, results
         except Exception as e:

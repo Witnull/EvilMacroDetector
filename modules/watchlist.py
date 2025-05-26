@@ -14,7 +14,8 @@ import os
 import json
 import trio
 import re
-import threading
+import hashlib
+import mmap
 
 class Watchlist:
     """Class to track process and file actions with efficient summary generation and saving."""
@@ -27,6 +28,7 @@ class Watchlist:
         self.watchlist_file = {}
         self.watchlist_ip={}
         self.watchlist_url={}
+        self.watchlist_file_name = {}
         self.summaries = {
             "file_name_to_hash": {},
             "file": {},
@@ -41,7 +43,18 @@ class Watchlist:
         self._save_queue = Queue(1)
         self._save_lock = trio.Lock()
         self._save_worker_started = False
-      
+
+    async def is_file_in_watchlist(self, file_path):
+        """Check if a file is in the watchlist."""
+        if not os.path.exists(file_path):
+            return False
+        file_hash = await self.hash_file_md5(file_path)
+        return file_hash in list(self.watchlist_file.keys())
+    
+    def get_hash_from_file_name(self, file_name):
+        """Get the file hash from the file name."""
+        return self.summaries["file_name_to_hash"].get(file_name)
+
     async def generate_summary_process(self, pid, force=False):
         """Generate a summary for a process, updating incrementally."""
         
@@ -132,16 +145,32 @@ class Watchlist:
             tasks.append(self.generate_summary_file(file_hash, force))
         await trio.run_all(tasks)
 
-    async def add_file(self, file_hash, file_path, info):
-        """Add a file to the watchlist and update summary."""
+    async def hash_file_md5(self, file_path):
+        """
+        Async MD5 hash implementation using mmap.
+        """
+        md5_hash = hashlib.md5()
+        try:
+            with open(file_path, 'rb') as file:
+                with mmap.mmap(file.fileno(), length=0, access=mmap.ACCESS_READ) as mm:
+                    md5_hash.update(mm)
+            return md5_hash.hexdigest()
+        except FileNotFoundError:
+           self.log_func(f"Hash Failed! File not found: {file_path}")
+        except IOError as e:
+            raise IOError(f"Error reading file {file_path}: {str(e)}")
 
+    async def add_file(self, file_path, info):
+        """Add a file to the watchlist and update summary."""
+        if not os.path.exists(file_path):
+            self.log_func(f"Add file watchlist failed! File not found: {file_path}", "ERROR")
+            return
+        file_hash = await self.hash_file_md5(file_path)
         info["timestamp"] = datetime.now()
         file_name = os.path.basename(file_path)
         self.watchlist_file.setdefault(file_hash, []).append(info)
         self.summaries["file_name_to_hash"][file_name] = file_hash
         self.log_func(f"Added file to watchlist: {file_path} - {file_hash}", "WATCHLIST")
-        await self.generate_summary_file(file_hash, force=True)
-        await self.save_to_json()
 
     async def add_process(self, pid, info):
         """Add a process to the watchlist and update summary."""
@@ -149,8 +178,6 @@ class Watchlist:
         info["timestamp"] = datetime.now()
         self.watchlist_process.setdefault(pid, []).append(info)
         self.log_func(f"Added process to watchlist: {pid}", "WATCHLIST")
-        await self.generate_summary_process(pid, force=True)
-        await self.save_to_json()
 
     async def remove_process(self, pid):
         """Remove a process from the watchlist and its summary."""
@@ -160,7 +187,6 @@ class Watchlist:
             self.summaries["process"].pop(pid, None)
             self.summary_proc_last_gen.pop(pid, None)
             self.log_func(f"Removed process from watchlist: {pid}", "WATCHLIST")
-            await self.save_to_json()
 
     async def cleanup_old_entries(self):
         """Remove entries older than max_entry_age."""
@@ -220,19 +246,22 @@ class Watchlist:
             self._save_worker_started = True
         await self._save_queue.put(True)
 
-    async def compile_target_informations(self, target_info):
+    async def compile_target_informations(self, input):
         """
         Compile target information from watchlist.
         Correlate process, file, and IP information to trace origin.
         Args:
-            target_info: File hash, file path, PID, or IP address to analyze.
+            input: Dict with keys {"val": any, "type": "ip"|"file_path"|"file_hash"|"pid"}
         Returns:
             Dict containing correlated information about the target.
         """
 
+        target_val = input["val"]
+        target_type = input["type"]
+
         report = {
-            "target": target_info,
-            "type": None,
+            "target": target_val,
+            "type": target_type,
             "file_details": [],
             "process_details": [],
             "network_details": [],
@@ -242,28 +271,12 @@ class Watchlist:
             "correlations": []
         }
 
-        # Determine target type (file hash, file path, PID, or IP)
-        if target_info in self.watchlist_file or target_info in self.summaries["file_name_to_hash"].values():
-            report["type"] = "file_hash"
-            file_hash = target_info
-        elif target_info in self.summaries["file_name_to_hash"]:
-            report["type"] = "file_path"
-            file_hash = self.summaries["file_name_to_hash"].get(target_info)
-        elif target_info in self.watchlist_process or target_info.isdigit():
-            report["type"] = "pid"
-            pid = int(target_info)
-        elif re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", target_info):
-            report["type"] = "ip"
-            ip = target_info
-        else:
-            report["type"] = "unknown"
-            self.log_func(f"Unknown target type for: {target_info}", "ERROR")
-            return report
-
         # File-based target (hash or path)
-        if report["type"] in ["file_hash", "file_path"]:
-            if report["type"] == "file_path":
-                file_hash = self.summaries["file_name_to_hash"].get(target_info)
+        if target_type in ["file_hash", "file_path"]:
+            if target_type == "file_path":
+                file_hash = self.summaries["file_name_to_hash"].get(target_val)
+            else:
+                file_hash = target_val
             if file_hash and file_hash in self.watchlist_file:
                 file_summary = await self.generate_summary_file(file_hash, force=True)
                 report["file_details"].append(file_summary)
@@ -313,7 +326,8 @@ class Watchlist:
                             })
 
         # Process-based target (PID)
-        elif report["type"] == "pid":
+        elif target_type == "pid":
+            pid = int(target_val)
             if pid in self.watchlist_process:
                 proc_summary = await self.generate_summary_process(pid, force=True)
                 report["process_details"].append(proc_summary)
@@ -340,7 +354,8 @@ class Watchlist:
                         report["origin"] = entry["network"].get("url") or entry["network"].get("ip")
 
         # IP-based target
-        elif report["type"] == "ip":
+        elif target_type == "ip":
+            ip = target_val
             if ip in self.watchlist_ip:
                 for entry in self.watchlist_ip[ip]:
                     report["network_details"].append({
@@ -373,8 +388,13 @@ class Watchlist:
                     if entry.get("type") == "download":
                         report["origin"] = ip
 
+        else:
+            report["type"] = "unknown"
+            self.log_func(f"Unknown target type for: {target_val}", "ERROR")
+            return report
+
         # Save report to JSON
-        report_file = os.path.join(self.save_dir, f"report_{target_info}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
+        report_file = os.path.join(self.save_dir, f"report_{target_val}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
         try:
             async with trio.open_file(report_file, "w") as f:
                 await f.write(json.dumps(report, indent=2))
@@ -382,5 +402,5 @@ class Watchlist:
         except Exception as e:
             self.log_func(f"Error saving report: {e}", "ERROR")
 
-        self.log_func(f"Compiled target information for: {target_info}", "WATCHLIST")
+        self.log_func(f"Compiled target information for: {target_val}", "WATCHLIST")
         return report

@@ -46,7 +46,13 @@
        
     ],
     "processes": [
-        "trusted.exe"
+        "trusted.exe",
+        "git.exe",
+        "handle64.exe",
+        "conhost64.exe",
+        "conhost.exe",
+        "node.exe"
+
     ],
     "file_extensions": [
         "txt",

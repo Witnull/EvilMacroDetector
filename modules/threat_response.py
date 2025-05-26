@@ -18,7 +18,7 @@ class ThreatResponse:
         """Move a suspicious file to the quarantine directory."""
         try:
             dest_path = os.path.join(self.quarantine_dir, os.path.basename(file_path) + f".quarantine_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
-            #shutil.move(file_path, dest_path)
+            shutil.move(file_path, dest_path)
             self.log_func(f"Quarantined file: {file_path} to {dest_path}", "ALERT")
             return True, dest_path
         except Exception as e:
@@ -31,13 +31,13 @@ class ThreatResponse:
             if type_ == "pid":
                 pid = pid_or_file
                 proc = psutil.Process(pid)
-                #proc.terminate()
+                proc.terminate()
                 self.log_func(f"Terminated process PID {pid}", "ALERT")
             elif type_ == "handle":
                 handles = pid_or_file
                 for handle in handles:
                     proc = psutil.Process(handle['pid'])
-                    #proc.terminate()
+                    proc.terminate()
                     self.log_func(f"Terminated process PID {handle['pid']}", "ALERT")
 
             return True, f"Terminated PID {pid}"
@@ -50,8 +50,8 @@ class ThreatResponse:
         """Add a firewall rule to block a suspicious IP (requires admin)."""
         try:
             rule_name = f"Block_{ip_address}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-            #cmd = ["netsh", "advfirewall", "firewall", "add", "rule", f"name={rule_name}", "dir=out", "action=block", f"remoteip={ip_address}"]
-            #subprocess.run(cmd, check=True)
+            cmd = ["netsh", "advfirewall", "firewall", "add", "rule", f"name={rule_name}", "dir=out", "action=block", f"remoteip={ip_address}"]
+            subprocess.run(cmd, check=True)
             self.log_func(f"Blocked IP {ip_address} with firewall rule {rule_name}", "ALERT")
             return True, f"Blocked IP {ip_address}"
         except subprocess.CalledProcessError as e:
