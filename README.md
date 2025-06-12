@@ -176,6 +176,9 @@ Run a separate thread to monitor network sniffing...
 - Process analysis: 0.3 - 0.5s (max 1.2s)
 - Packet analysis: (0 - 0.2s) (0.12s)
 
+
+![Logs of detection](images/img1.png "Logs of detection")
+
 ***FUTURES:***
 
 - Draw a graph for the whole timeline (based off CyberKillChain if possible) related information, spawned process, etc ... for further analysis, saved it hash to `main dictionary/blacklist`
