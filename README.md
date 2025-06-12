@@ -45,7 +45,13 @@ The VBA Macro Malware Monitor Service is a Python-based security tool designed t
 - [olevba](https://github.com/decalage2/oletools/wiki/olevba)
 
 - [More here ...](/requirements.txt)
+## INSTALL AND DEPLOY
 
+Simply `clone` this repository , install requirements and naming the folders correctly
+
+Then change the path in **Install-StartService.ps1** and **Stop-RemoveService.ps1** then run it.. Done
+
+**If there troubles in stopping service** - simply, go into TaskManager find python-service then terminate it.
 #### VARIABLES
 
 - **exclusions** - ignore when run ( ip, folder, process, cmd)
