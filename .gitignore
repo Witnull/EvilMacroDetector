@@ -8,3 +8,10 @@ not_important
 daccmd
 t_*
 sample
+*.dll
+*.zip
+*.exe
+*.7z
+*.rar
+*pecli
+manalyze_x64

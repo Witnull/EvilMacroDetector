@@ -1,0 +1,40 @@
+[Thu Jun 12 21:54:24 2025][TRACE] Starting traceback for IP: d2411a34-59f9-464b-a5db-fff24ffcf0d9
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back IP 192.168.146.128 with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'type': 'IOC', 'trace': 'd2411a34-59f9-464b-a5db-fff24ffcf0d9'} -> BLOCK
+[Thu Jun 12 21:54:24 2025][TRACE] Starting traceback file: d2411a34-59f9-464b-a5db-fff24ffcf0d9
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back file systemresetplatform.exe with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'type': 'IOC', 'trace': '6723475d-8517-467b-aaa0-539618350321'}
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back file Win10_Enc_Only.xlsm with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'trace': '80af2e89-00dd-48bd-9191-451cfde2ec8d', 'file_path': 'C:\\Users\\null\\Downloads\\Win10_Enc_Only.xlsm', 'type': 'office'}
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back file rjvplatform.dll with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'type': 'IOC', 'trace': '87d1bf90-4545-4c0e-b641-4a811a27866a'}
+[Thu Jun 12 21:54:24 2025][TRACE] Starting traceback for process ID: d2411a34-59f9-464b-a5db-fff24ffcf0d9
+[Thu Jun 12 21:54:24 2025][TRACE] Traceback for trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9 completed
+[Thu Jun 12 21:54:24 2025][TRACE] Starting traceback for IP: d2411a34-59f9-464b-a5db-fff24ffcf0d9
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back IP 192.168.146.128 with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'type': 'IOC', 'trace': 'd2411a34-59f9-464b-a5db-fff24ffcf0d9'} -> BLOCK
+[Thu Jun 12 21:54:24 2025][TRACE] Starting traceback file: d2411a34-59f9-464b-a5db-fff24ffcf0d9
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back file systemresetplatform.exe with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'type': 'IOC', 'trace': '6723475d-8517-467b-aaa0-539618350321'}
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back file Win10_Enc_Only.xlsm with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'trace': '80af2e89-00dd-48bd-9191-451cfde2ec8d', 'file_path': 'C:\\Users\\null\\Downloads\\Win10_Enc_Only.xlsm', 'type': 'office'}
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back file rjvplatform.dll with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'type': 'IOC', 'trace': '87d1bf90-4545-4c0e-b641-4a811a27866a'}
+[Thu Jun 12 21:54:24 2025][TRACE] Starting traceback for process ID: d2411a34-59f9-464b-a5db-fff24ffcf0d9
+[Thu Jun 12 21:54:24 2025][TRACE] Traceback for trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9 completed
+[Thu Jun 12 21:54:24 2025][TRACE] Starting traceback for IP: d2411a34-59f9-464b-a5db-fff24ffcf0d9
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back IP 192.168.146.128 with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'type': 'IOC', 'trace': 'd2411a34-59f9-464b-a5db-fff24ffcf0d9'} -> BLOCK
+[Thu Jun 12 21:54:24 2025][TRACE] Starting traceback file: d2411a34-59f9-464b-a5db-fff24ffcf0d9
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back file systemresetplatform.exe with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'type': 'IOC', 'trace': '6723475d-8517-467b-aaa0-539618350321'}
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back file Win10_Enc_Only.xlsm with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'trace': '80af2e89-00dd-48bd-9191-451cfde2ec8d', 'file_path': 'C:\\Users\\null\\Downloads\\Win10_Enc_Only.xlsm', 'type': 'office'}
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back file rjvplatform.dll with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'type': 'IOC', 'trace': '87d1bf90-4545-4c0e-b641-4a811a27866a'}
+[Thu Jun 12 21:54:24 2025][TRACE] Starting traceback for process ID: d2411a34-59f9-464b-a5db-fff24ffcf0d9
+[Thu Jun 12 21:54:24 2025][TRACE] Traceback for trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9 completed
+[Thu Jun 12 21:54:24 2025][TRACE] Starting traceback for IP: d2411a34-59f9-464b-a5db-fff24ffcf0d9
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back IP 192.168.146.128 with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'type': 'IOC', 'trace': 'd2411a34-59f9-464b-a5db-fff24ffcf0d9'} -> BLOCK
+[Thu Jun 12 21:54:24 2025][TRACE] Starting traceback file: d2411a34-59f9-464b-a5db-fff24ffcf0d9
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back file systemresetplatform.exe with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'type': 'IOC', 'trace': '6723475d-8517-467b-aaa0-539618350321'}
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back file Win10_Enc_Only.xlsm with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'trace': '80af2e89-00dd-48bd-9191-451cfde2ec8d', 'file_path': 'C:\\Users\\null\\Downloads\\Win10_Enc_Only.xlsm', 'type': 'office'}
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back file rjvplatform.dll with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'type': 'IOC', 'trace': '87d1bf90-4545-4c0e-b641-4a811a27866a'}
+[Thu Jun 12 21:54:24 2025][TRACE] Starting traceback for process ID: d2411a34-59f9-464b-a5db-fff24ffcf0d9
+[Thu Jun 12 21:54:24 2025][TRACE] Traceback for trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9 completed
+[Thu Jun 12 21:54:24 2025][TRACE] Starting traceback for IP: d2411a34-59f9-464b-a5db-fff24ffcf0d9
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back IP 192.168.146.128 with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'type': 'IOC', 'trace': 'd2411a34-59f9-464b-a5db-fff24ffcf0d9'} -> BLOCK
+[Thu Jun 12 21:54:24 2025][TRACE] Starting traceback file: d2411a34-59f9-464b-a5db-fff24ffcf0d9
+[Thu Jun 12 21:54:25 2025][TRACE] Tracing back file systemresetplatform.exe with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'type': 'IOC', 'trace': '6723475d-8517-467b-aaa0-539618350321'}
+[Thu Jun 12 21:54:25 2025][TRACE] Tracing back file Win10_Enc_Only.xlsm with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'trace': '80af2e89-00dd-48bd-9191-451cfde2ec8d', 'file_path': 'C:\\Users\\null\\Downloads\\Win10_Enc_Only.xlsm', 'type': 'office'}
+[Thu Jun 12 21:54:25 2025][TRACE] Tracing back file rjvplatform.dll with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'type': 'IOC', 'trace': '87d1bf90-4545-4c0e-b641-4a811a27866a'}
+[Thu Jun 12 21:54:25 2025][TRACE] Starting traceback for process ID: d2411a34-59f9-464b-a5db-fff24ffcf0d9
+[Thu Jun 12 21:54:25 2025][TRACE] Traceback for trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9 completed

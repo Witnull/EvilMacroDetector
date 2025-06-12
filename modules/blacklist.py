@@ -30,7 +30,7 @@ class Blacklist:
             # Suspicious file extensions
             "suspicious_exe_extension": ['exe', 'dll','py', 'pl', 'bat', 'ps1', 'sh', 'cmd', 'bin', 'com', 'vbs', 'js'],
             # Suspicious commands
-            "suspicious_commands": ['cmd', 'powershell', 'net', 'reg', 'taskkill', 'sc', 'wmic', 'curl'],
+            "suspicious_commands": ['cmd', 'powershell', 'net', 'reg', 'taskkill', 'sc', 'wmic', 'curl','winget'],
             # Suspicuous Office extensions
             "suspicious_office_extension": ["docm", "dotm", "xlm", "xlam", "xlsm", "xltm", "potm",  "ppsm", "pptm", "sldm", "ppam"],
             # Ref: https://community.spiceworks.com/t/ms-office-documents-with-macros-easy-way-to-identify-and-filter/952121/7

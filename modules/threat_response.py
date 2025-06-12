@@ -10,11 +10,12 @@ import trio
 class ThreatResponse:
     """Handles automated responses to detected threats."""
     
-    def __init__(self, log_func, log_dir, parser):
+    def __init__(self, sysinternals_path, log_func, log_dir, parser):
         self.log_func = log_func
         self.quarantine_dir = os.path.join(log_dir, "Quarantine")
         os.makedirs(self.quarantine_dir, exist_ok=True)
         self.parser = parser
+        #self.pskill_path = os.path.join(sysinternals_path, "pskill.exe")
 
     def quarantine_file(self, file_path):
         """Move a suspicious file to the quarantine directory."""
@@ -27,22 +28,14 @@ class ThreatResponse:
             self.log_func(f"Failed to quarantine {file_path}: {str(e)}", "ERROR")
     
 
-    def terminate_process(self, pid_or_file, type_="pid"):
+    def terminate_process(self, pid,name):
         """Terminate a suspicious process."""
         try:
-            if type_ == "pid":
-                pid = pid_or_file
-                proc = psutil.Process(pid)
-                proc.terminate()
-                self.log_func(f"Terminated process PID {pid}", "ALERT")
-            elif type_ == "handle":
-                handles = pid_or_file
-                for handle in handles:
-                    proc = psutil.Process(handle['pid'])
-                    proc.terminate()
-                    self.log_func(f"Terminated process PID {handle['pid']}", "ALERT")
-
-     
+            self.log_func(f"Attempting to terminate process PID {pid} - {name}", "ALERT")
+            #cmd=[ self.pskill_path , "-nobanner", "-accepteula", "-t", str(pid)]
+            cmd=["taskkill", "/f", "/t", "/pid", str(pid)]
+            subprocess.run(cmd)
+            self.log_func(f"Terminated process PID {pid}", "ALERT")
         except (psutil.NoSuchProcess, psutil.AccessDenied) as e:
             self.log_func(f"Failed to terminate PID {pid}: {str(e)}", "ERROR")
      

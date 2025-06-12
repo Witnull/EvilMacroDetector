@@ -1,0 +1,47 @@
+[Thu Jun 12 21:51:40 2025][APR] Analyzing process with PID: 4744 - Name: brave.exe
+[Thu Jun 12 21:51:40 2025][APR] Function analyze_process completed in 0.364 seconds
+[Thu Jun 12 21:51:52 2025][APR] Analyzing process with PID: 8480 - Name: brave.exe
+[Thu Jun 12 21:51:52 2025][APR] Function analyze_process completed in 0.417 seconds
+[Thu Jun 12 21:51:54 2025][APR] Analyzing process with PID: 8728 - Name: handle.exe
+[Thu Jun 12 21:51:54 2025][APR] Function analyze_process completed in 0.300 seconds
+[Thu Jun 12 21:52:08 2025][APR] Analyzing process with PID: 3512 - Name: smartscreen.exe
+[Thu Jun 12 21:52:08 2025][APR] Function analyze_process completed in 0.372 seconds
+[Thu Jun 12 21:52:08 2025][APR] Analyzing process with PID: 9916 - Name: excel.exe
+[Thu Jun 12 21:52:09 2025][APR] Function analyze_process completed in 0.815 seconds
+[Thu Jun 12 21:52:32 2025][APR] Analyzing process with PID: 9704 - Name: excel.exe
+[Thu Jun 12 21:52:33 2025][APR] Function analyze_process completed in 0.551 seconds
+[Thu Jun 12 21:53:15 2025][APR] Analyzing process with PID: 4748 - Name: git-remote-https.exe
+[Thu Jun 12 21:53:15 2025][APR] Function analyze_process completed in 0.214 seconds
+[Thu Jun 12 21:54:06 2025][APR] Analyzing process with PID: 10024 - Name: excel.exe
+[Thu Jun 12 21:54:06 2025][APR] Function analyze_process completed in 0.571 seconds
+[Thu Jun 12 21:54:16 2025][APR] Analyzing process with PID: 6296 - Name: excel.exe
+[Thu Jun 12 21:54:17 2025][APR] Function analyze_process completed in 0.511 seconds
+[Thu Jun 12 21:54:19 2025][APR] Analyzing process with PID: 7696 - Name: excel.exe
+[Thu Jun 12 21:54:20 2025][APR] Function analyze_process completed in 0.216 seconds
+[Thu Jun 12 21:54:24 2025][APR] Analyzing process with PID: 8404 - Name: curl.exe
+[Thu Jun 12 21:54:25 2025][APR] Function analyze_process completed in 1.218 seconds
+[Thu Jun 12 21:54:26 2025][APR] Analyzing process with PID: 1660 - Name: handle.exe
+[Thu Jun 12 21:54:26 2025][APR] Function analyze_process completed in 0.440 seconds
+[Thu Jun 12 21:54:27 2025][APR] Analyzing process with PID: 4284 - Name: systemresetplatform.exe
+[Thu Jun 12 21:54:28 2025][APR] Function analyze_process completed in 0.844 seconds
+[Thu Jun 12 21:54:30 2025][APR] Analyzing process with PID: 2360 - Name: manalyze.exe
+[Thu Jun 12 21:54:31 2025][APR] Analyzing process with PID: 6852 - Name: handle.exe
+[Thu Jun 12 21:54:32 2025][APR] Function analyze_process completed in 0.884 seconds
+[Thu Jun 12 21:54:33 2025][APR] Analyzing process with PID: 6832 - Name: sppsvc.exe
+[Thu Jun 12 21:54:33 2025][APR] Function analyze_process completed in 0.267 seconds
+[Thu Jun 12 21:54:34 2025][APR] Analyzing process with PID: 10116 - Name: filecoauth.exe
+[Thu Jun 12 21:54:35 2025][APR] Function analyze_process completed in 0.442 seconds
+[Thu Jun 12 21:55:33 2025][APR] Analyzing process with PID: 5992 - Name: splwow64.exe
+[Thu Jun 12 21:55:33 2025][APR] Function analyze_process completed in 0.240 seconds
+[Thu Jun 12 21:56:15 2025][APR] Analyzing process with PID: 3600 - Name: git-remote-https.exe
+[Thu Jun 12 21:56:16 2025][APR] Function analyze_process completed in 0.261 seconds
+[Thu Jun 12 21:56:16 2025][APR] Analyzing process with PID: 8680 - Name: git-remote-https.exe
+[Thu Jun 12 21:56:16 2025][APR] Function analyze_process completed in 0.205 seconds
+[Thu Jun 12 21:56:47 2025][APR] Analyzing process with PID: 7688 - Name: microsoftedgeupdate.exe
+[Thu Jun 12 21:56:48 2025][APR] Function analyze_process completed in 0.203 seconds
+[Thu Jun 12 21:56:48 2025][APR] Analyzing process with PID: 8532 - Name: svchost.exe
+[Thu Jun 12 21:56:48 2025][APR] Function analyze_process completed in 0.187 seconds
+[Thu Jun 12 21:57:22 2025][APR] Analyzing process with PID: 6700 - Name: python.exe
+[Thu Jun 12 21:57:22 2025][APR] Function analyze_process completed in 0.289 seconds
+[Thu Jun 12 21:57:36 2025][APR] Analyzing process with PID: 7524 - Name: python.exe
+[Thu Jun 12 21:57:36 2025][APR] Function analyze_process completed in 0.287 seconds

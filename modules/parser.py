@@ -16,7 +16,7 @@ sys.stdout = sys.stdout or io.StringIO()
 
 from oletools.olevba import VBA_Parser, VBA_Scanner
 from oletools.msodde import process_file as extract_dde
-
+import pathlib
 from pathlib import Path
 from functools import lru_cache
 import os
@@ -98,6 +98,7 @@ class Parser:
         self.handle_exe = os.path.join(sysinternals_path, 'handle.exe')
         self.listdlls_exe = os.path.join(sysinternals_path, 'listdlls.exe')
         self.sysmon_exe = os.path.join(sysinternals_path, 'sysmon.exe')
+        self.manalyze_exe = r"C:\Users\null\Downloads\CCMD_DA\manalyze_x64\manalyze.exe"
 
         # # Suspicious 
         self.suspicious_dlls = self.blacklist.suspicious_stuff.get("suspicious_dll", [])
@@ -441,8 +442,71 @@ class Parser:
             self.logger.error(f"Handle check failed for {str(file_path_or_pid)}: {str(e)} maybe this file not running")
             self.log_func(f"Handle check failed for {str(file_path_or_pid)}: {str(e)} maybe this file not running", "ERROR")
             return is_suspicious, results
-    
-   
+
+    def check_manalyze(self, file_path):
+        bench_mark_start = time.time()
+        results = {
+            "manalyze_output": {},
+            "threat_score": 0,
+        }
+        threat_score = 0
+        is_suspicious = False
+        try:
+            cmd = [self.manalyze_exe, "--plugins=peid,strings,imports,authenticode", "-o","json", file_path]
+            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            output = result.stdout
+            parsed_output = json.loads(output)
+            posix_path = str(pathlib.Path(file_path).as_posix())
+            parsed_output = parsed_output.get(posix_path, {})
+            results["manalyze_output"] = parsed_output
+
+            if parsed_output.get("Plugins"):
+                for plugin_name, plugin_data in parsed_output["Plugins"].items():
+                   
+                    level = plugin_data.get("level", 2) # 2 - Suspicious, 3 - Malicious
+                    if level == 2:
+                        is_suspicious = True
+                        self.log_func(f"Suspicious string found in {file_path} with plugin {plugin_name}", "WARN")
+                        threat_score += self.scoring.get('suspicious_string', 20)
+                    elif level == 3:
+                        is_suspicious = True
+                        self.log_func(f"Malicious string found in {file_path} with plugin {plugin_name}", "CRITICAL")
+                        threat_score += self.scoring.get('malicious_string', 30)
+
+                    output_plugin = plugin_data.get("plugin_output", {})
+                    for desc, list_findings in output_plugin.items():
+                        if any( x in desc.lower() for x in ["malware", "mimikatz"]):
+                            is_suspicious = True
+                            self.log_func(f"Malware strings detected in {file_path} with findings: {list_findings}", "CRITICAL")
+                            threat_score += self.scoring.get('malware_strings', 50)
+                        if "code injection" in desc.lower():
+                            is_suspicious = True
+                            self.log_func(f"Code injection detected in {file_path} with findings: {list_findings}", "CRITICAL")
+                            threat_score += self.scoring.get('code_injection', 30)
+                        if "internet" in desc.lower():
+                            is_suspicious = True
+                            self.log_func(f"Internet access detected in {file_path} with findings: {list_findings}", "CRITICAL")
+                            threat_score += self.scoring.get('internet_access', 20)
+                        if "manipulates other processes" in desc.lower():
+                            is_suspicious = True
+                            self.log_func(f"Process manipulation detected in {file_path} with findings: {list_findings}", "CRITICAL")
+                            threat_score += self.scoring.get('process_manipulation', 30)
+                        if any(x in desc.lower() for x in ["obfuscate", "xor","base64"]):
+                            is_suspicious = True
+                            self.log_func(f"Obfuscation detected in {file_path} with findings: {list_findings}", "CRITICAL")
+                            threat_score += self.scoring.get('obfuscation', 20)
+                            
+
+            results["threat_score"] = threat_score
+            self.log_func(f"Manual analysis completed for {str(file_path)} in {time.time() - bench_mark_start:.2f} seconds", "BM")
+            return is_suspicious, results
+        except subprocess.CalledProcessError as e:
+           self.log_func(f"Manalyze failed for {str(file_path)}: {str(e)}", "ERROR")
+           return is_suspicious, results
+        except Exception as e:
+            self.log_func(f"Manalyze failed for {str(file_path)}: {str(e)}", "ERROR")
+            return is_suspicious, results
+
     def _parse_listdlls_output(self, output):
         """Parse listdlls output and return structured data"""
         dlls = []

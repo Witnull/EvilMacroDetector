@@ -1,0 +1,33 @@
+[Thu Jun 12 21:51:49 2025][NET] Processing packet: Ether / IP / TCP / TLS 140.82.114.21:443 > 192.168.146.126:64206 / TLS / TLS Handshake - Server Hello / TLS / TLS ChangeCipherSpec / Raw
+[Thu Jun 12 21:51:49 2025][NET] Packet encoded: True
+[Thu Jun 12 21:51:49 2025][NET] Network: TCP 140.82.114.21:443 -> 192.168.146.126:64206
+[Thu Jun 12 21:52:21 2025][NET] Processing packet: Ether / IP / TCP 192.168.146.126:64234 > 23.202.35.105:http PA / Raw
+[Thu Jun 12 21:52:21 2025][NET] Packet encoded: True
+[Thu Jun 12 21:52:21 2025][NET] Network: TCP 192.168.146.126:64234 -> 23.202.35.105:80
+[Thu Jun 12 21:53:08 2025][NET] Processing packet: Ether / IP / TCP 192.168.146.126:64246 > 23.48.56.229:http PA / Raw
+[Thu Jun 12 21:53:08 2025][NET] Packet encoded: True
+[Thu Jun 12 21:53:08 2025][NET] Network: TCP 192.168.146.126:64246 -> 23.48.56.229:80
+[Thu Jun 12 21:53:08 2025][NET] Processing packet: Ether / IP / TCP 192.168.146.126:64247 > 142.250.76.227:http PA / Raw
+[Thu Jun 12 21:53:08 2025][NET] Packet encoded: True
+[Thu Jun 12 21:53:08 2025][NET] Network: TCP 192.168.146.126:64247 -> 142.250.76.227:80
+[Thu Jun 12 21:53:08 2025][NET] Processing packet: Ether / IP / TCP 192.168.146.126:64247 > 142.250.76.227:http PA / Raw
+[Thu Jun 12 21:53:08 2025][NET] Packet encoded: True
+[Thu Jun 12 21:53:08 2025][NET] Network: TCP 192.168.146.126:64247 -> 142.250.76.227:80
+[Thu Jun 12 21:54:24 2025][NET] Processing packet: Ether / IP / TCP 192.168.146.126:64273 > 192.168.146.128:http PA / Raw
+[Thu Jun 12 21:54:24 2025][NET] Packet encoded: True
+[Thu Jun 12 21:54:24 2025][NET] Network: TCP 192.168.146.126:64273 -> 192.168.146.128:80
+[Thu Jun 12 21:54:24 2025][NET] Processing packet: Ether / IP / TCP 192.168.146.128:http > 192.168.146.126:64273 A / Raw
+[Thu Jun 12 21:54:24 2025][NET] Packet encoded: True
+[Thu Jun 12 21:54:24 2025][NET] Network: TCP 192.168.146.128:80 -> 192.168.146.126:64273
+[Thu Jun 12 21:54:24 2025][NET] Processing packet: Ether / IP / TCP 192.168.146.128:http > 192.168.146.126:64273 A / Raw
+[Thu Jun 12 21:54:24 2025][NET] Packet encoded: True
+[Thu Jun 12 21:54:24 2025][NET] Network: TCP 192.168.146.128:80 -> 192.168.146.126:64273
+[Thu Jun 12 21:54:24 2025][NET] Processing packet: Ether / IP / TCP 192.168.146.128:http > 192.168.146.126:64273 A / Raw
+[Thu Jun 12 21:54:24 2025][NET] Packet encoded: True
+[Thu Jun 12 21:54:24 2025][NET] Network: TCP 192.168.146.128:80 -> 192.168.146.126:64273
+[Thu Jun 12 21:54:24 2025][NET] Processing packet: Ether / IP / TCP 192.168.146.128:http > 192.168.146.126:64273 A / Raw
+[Thu Jun 12 21:54:24 2025][NET] Packet encoded: True
+[Thu Jun 12 21:54:24 2025][NET] Network: TCP 192.168.146.128:80 -> 192.168.146.126:64273
+[Thu Jun 12 21:56:03 2025][NET] Processing packet: Ether / IP / TCP 192.168.146.1:63136 > 192.168.146.126:ssh PA / Raw
+[Thu Jun 12 21:56:03 2025][NET] Packet encoded: True
+[Thu Jun 12 21:56:03 2025][NET] Network: TCP 192.168.146.1:63136 -> 192.168.146.126:22

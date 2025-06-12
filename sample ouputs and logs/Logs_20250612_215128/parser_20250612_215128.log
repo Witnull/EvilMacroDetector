@@ -1,0 +1,21 @@
+[2025-06-12 21:51:28,231] [INFO] Parser initiated...
+[2025-06-12 21:51:30,788] [INFO] System files loaded: 4693 entries
+[2025-06-12 21:51:40,909] [WARNING]  File from non-system path: C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe
+[2025-06-12 21:51:52,407] [DEBUG] Starting macro analysis for C:\Users\null\Downloads\Win10_Enc_Only.xlsm
+[2025-06-12 21:51:52,866] [INFO] Begin deobfuscate C:\Users\null\Downloads\Win10_Enc_Only.xlsm
+[2025-06-12 21:51:54,960] [WARNING]  File from non-system path: C:\Users\null\Downloads\CCMD_DA\SYSINTERNAL\handle.exe
+[2025-06-12 21:51:57,324] [DEBUG] Starting macro analysis for C:\Users\null\Downloads\Win10_Enc_Only_clean.xlsm
+[2025-06-12 21:51:57,328] [INFO] No macros found in C:\Users\null\Downloads\Win10_Enc_Only_clean.xlsm
+[2025-06-12 21:52:09,317] [WARNING]  File from non-system path: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE
+[2025-06-12 21:52:32,875] [WARNING]  File from non-system path: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE
+[2025-06-12 21:54:06,354] [WARNING]  File from non-system path: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE
+[2025-06-12 21:54:16,909] [WARNING]  File from non-system path: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE
+[2025-06-12 21:54:20,145] [WARNING]  File from non-system path: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE
+[2025-06-12 21:54:26,967] [WARNING]  File from non-system path: C:\Users\null\Downloads\CCMD_DA\SYSINTERNAL\handle.exe
+[2025-06-12 21:54:32,079] [WARNING]  File from non-system path: C:\Users\null\Downloads\CCMD_DA\SYSINTERNAL\handle.exe
+[2025-06-12 21:54:35,131] [WARNING]  File from non-system path: C:\Program Files\Microsoft OneDrive\25.091.0512.0001\FileCoAuth.exe
+[2025-06-12 21:55:33,527] [WARNING]  File from non-system path: C:\Windows\splwow64.exe
+[2025-06-12 21:56:16,127] [WARNING]  File from non-system path: C:\Program Files\Git\mingw64\libexec\git-core\git-remote-https.exe
+[2025-06-12 21:56:16,479] [WARNING]  File from non-system path: C:\Program Files\Git\mingw64\libexec\git-core\git-remote-https.exe
+[2025-06-12 21:57:22,509] [WARNING]  File from non-system path: C:\Users\null\AppData\Local\Programs\Python\Python313\python.exe
+[2025-06-12 21:57:36,445] [WARNING]  File from non-system path: C:\Users\null\AppData\Local\Programs\Python\Python313\python.exe

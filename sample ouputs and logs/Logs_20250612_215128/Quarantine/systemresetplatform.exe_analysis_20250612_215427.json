@@ -1,0 +1,28 @@
+{
+    "suspiscious_ip": [],
+    "suspicious_ports": [],
+    "connect_to_inet": [],
+    "suspicious_commands": [],
+    "suspicious_cmd_args": [],
+    "threat_score": 30,
+    "is_dangerous": false,
+    "pid": 4284,
+    "process_name": "systemresetplatform.exe",
+    "trace": "6723475d-8517-467b-aaa0-539618350321",
+    "cmdline": "C:\\Windows\\System32\\SystemResetPlatform\\SystemResetPlatform.exe",
+    "listdlls_output": [
+        {
+            "base_address": "0x000000004fa00000",
+            "size": "0x7000",
+            "path": "C:\\Windows\\System32\\SystemResetPlatform\\SystemResetPlatform.exe",
+            "verified": null,
+            "publisher": null,
+            "description": null,
+            "product": null,
+            "version": null,
+            "file_version": null,
+            "create_time": null
+        }
+    ],
+    "suspicious_dlls": []
+}

@@ -1,0 +1,42 @@
+{
+    "suspiscious_ip": [],
+    "suspicious_ports": [],
+    "connect_to_inet": [],
+    "suspicious_commands": "C:\\Program Files\\Microsoft Office\\Root\\Office16\\EXCEL.EXE C:\\Users\\null\\Downloads\\CCMD_DA\\Win10_Enc_Only.xlsm",
+    "suspicious_cmd_args": [],
+    "threat_score": 70,
+    "is_dangerous": false,
+    "pid": 9916,
+    "process_name": "excel.exe",
+    "cmdline": "C:\\Program Files\\Microsoft Office\\Root\\Office16\\EXCEL.EXE C:\\Users\\null\\Downloads\\CCMD_DA\\Win10_Enc_Only.xlsm",
+    "watchlisted_cmd": "C:\\Program Files\\Microsoft Office\\Root\\Office16\\EXCEL.EXE C:\\Users\\null\\Downloads\\CCMD_DA\\Win10_Enc_Only.xlsm",
+    "trace": "80af2e89-00dd-48bd-9191-451cfde2ec8d",
+    "listdlls_output": [
+        {
+            "base_address": "0x000000004a350000",
+            "size": "0x44e0000",
+            "path": "C:\\Program Files\\Microsoft Office\\Root\\Office16\\EXCEL.EXE",
+            "verified": null,
+            "publisher": null,
+            "description": null,
+            "product": null,
+            "version": null,
+            "file_version": null,
+            "create_time": null
+        }
+    ],
+    "suspicious_dlls": [
+        {
+            "base_address": "0x000000004a350000",
+            "size": "0x44e0000",
+            "path": "C:\\Program Files\\Microsoft Office\\Root\\Office16\\EXCEL.EXE",
+            "verified": null,
+            "publisher": null,
+            "description": null,
+            "product": null,
+            "version": null,
+            "file_version": null,
+            "create_time": null
+        }
+    ]
+}

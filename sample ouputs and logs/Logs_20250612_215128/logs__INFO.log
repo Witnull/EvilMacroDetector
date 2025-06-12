@@ -1,0 +1,31 @@
+[Thu Jun 12 21:51:30 2025][INFO] Service started
+[Thu Jun 12 21:51:30 2025][INFO] Starting network packet sniffing...
+[Thu Jun 12 21:51:30 2025][INFO] Starting process lifecycle monitoring...
+[Thu Jun 12 21:51:40 2025][INFO] Process brave.exe-4744 deemed safe (Score: 0)
+[Thu Jun 12 21:51:52 2025][INFO] New Office file detected: {file_path}
+[Thu Jun 12 21:51:52 2025][INFO] Process brave.exe-8480 deemed safe (Score: 0)
+[Thu Jun 12 21:51:54 2025][INFO] Process handle.exe-8728 is running as SYSTEM
+[Thu Jun 12 21:51:54 2025][INFO] Process handle.exe-8728 deemed safe (Score: 40)
+[Thu Jun 12 21:51:57 2025][INFO] New Office file detected: {file_path}
+[Thu Jun 12 21:51:57 2025][INFO] File C:\Users\null\Downloads\Win10_Enc_Only_clean.xlsm deemed safe (Score: 20)
+[Thu Jun 12 21:52:08 2025][INFO] Process smartscreen.exe-3512 deemed safe (Score: 20)
+[Thu Jun 12 21:53:15 2025][INFO] Process git-remote-https.exe-4748 deemed safe (Score: 0)
+[Thu Jun 12 21:54:20 2025][INFO] Process excel.exe-7696 deemed safe (Score: 20)
+[Thu Jun 12 21:54:24 2025][INFO] New Executable file detected: {file_path}
+[Thu Jun 12 21:54:26 2025][INFO] Process handle.exe-1660 is running as SYSTEM
+[Thu Jun 12 21:54:26 2025][INFO] Process handle.exe-1660 deemed safe (Score: 40)
+[Thu Jun 12 21:54:29 2025][INFO] New Executable file detected: {file_path}
+[Thu Jun 12 21:54:31 2025][INFO] Process handle.exe-6852 is running as SYSTEM
+[Thu Jun 12 21:54:32 2025][INFO] Process handle.exe-6852 deemed safe (Score: 40)
+[Thu Jun 12 21:54:33 2025][INFO] Process sppsvc.exe-6832 deemed safe (Score: 0)
+[Thu Jun 12 21:54:35 2025][INFO] Process filecoauth.exe-10116 deemed safe (Score: 0)
+[Thu Jun 12 21:55:33 2025][INFO] Process splwow64.exe-5992 deemed safe (Score: 0)
+[Thu Jun 12 21:56:16 2025][INFO] Process git-remote-https.exe-3600 deemed safe (Score: 0)
+[Thu Jun 12 21:56:16 2025][INFO] Process git-remote-https.exe-8680 deemed safe (Score: 0)
+[Thu Jun 12 21:56:47 2025][INFO] Process microsoftedgeupdate.exe-7688 is running as SYSTEM
+[Thu Jun 12 21:56:48 2025][INFO] Process microsoftedgeupdate.exe-7688 deemed safe (Score: 40)
+[Thu Jun 12 21:56:48 2025][INFO] Process svchost.exe-8532 is running as SYSTEM
+[Thu Jun 12 21:56:48 2025][INFO] Process svchost.exe-8532 deemed safe (Score: 20)
+[Thu Jun 12 21:57:22 2025][INFO] Process python.exe-6700 deemed safe (Score: 20)
+[Thu Jun 12 21:57:23 2025][INFO] Service stopped
+[Thu Jun 12 21:57:36 2025][INFO] Process python.exe-7524 deemed safe (Score: 20)

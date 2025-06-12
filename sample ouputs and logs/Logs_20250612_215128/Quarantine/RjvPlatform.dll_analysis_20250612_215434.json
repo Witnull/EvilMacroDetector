@@ -1,0 +1,92 @@
+{
+    "sigcheck": false,
+    "handles": {},
+    "dlls": {},
+    "procdump": {},
+    "sysmon": {},
+    "threat_score": 220,
+    "is_dangerous": false,
+    "manalyze_output": {
+        "Summary": {
+            "Architecture": "IMAGE_FILE_MACHINE_AMD64",
+            "Subsystem": "IMAGE_SUBSYSTEM_WINDOWS_GUI",
+            "Compilation Date": "2025-May-02 14:38:50",
+            "Detected languages": [
+                "English - United Kingdom",
+                "English - United States"
+            ],
+            "Debug artifacts": [
+                "C:\\Data\\Solutions\\Cabview\\x64\\Release\\DWrite.pdb"
+            ],
+            "CompanyName": "Microsoft Corporation",
+            "FileDescription": "Microsoft DirectX Typography Services",
+            "FileVersion": "10.0.19041.1",
+            "InternalName": "DWrite",
+            "LegalCopyright": "\u00c2\u00a9 Microsoft Corporation. All rights reserved.",
+            "OriginalFilename": "DWrite",
+            "ProductName": "Microsoft\u00c2\u00ae Windows\u00c2\u00ae Operating System",
+            "ProductVersion": "10.0.19041.1"
+        },
+        "Plugins": {
+            "imports": {
+                "level": 3,
+                "plugin_output": {
+                    "[!] The program may be hiding some of its imports": [
+                        "GetProcAddress",
+                        "LoadLibraryExW"
+                    ],
+                    "Functions which can be used for anti-debugging purposes": [
+                        "CreateToolhelp32Snapshot"
+                    ],
+                    "Code injection capabilities": [
+                        "WriteProcessMemory",
+                        "OpenProcess",
+                        "VirtualAllocEx",
+                        "CreateRemoteThread"
+                    ],
+                    "Possibly launches other programs": [
+                        "CreateProcessW"
+                    ],
+                    "Memory manipulation functions often used by packers": [
+                        "VirtualProtectEx",
+                        "VirtualAllocEx"
+                    ],
+                    "Leverages the raw socket API to access the Internet": [
+                        "#3",
+                        "#22",
+                        "getaddrinfo",
+                        "#115",
+                        "#116",
+                        "#23",
+                        "#4",
+                        "#16",
+                        "freeaddrinfo",
+                        "#19"
+                    ],
+                    "Manipulates other processes": [
+                        "WriteProcessMemory",
+                        "OpenProcess",
+                        "Process32NextW",
+                        "Process32FirstW"
+                    ]
+                },
+                "summary": "The PE contains functions mostly used by malware."
+            }
+        }
+    },
+    "handle_output": [
+        {
+            "process": "pythonservice.exe",
+            "pid": 5908,
+            "type": "File",
+            "user": "NT AUTHORITY\\SYSTEM",
+            "handle": "0x000002A4",
+            "name": "",
+            "thread": "",
+            "thread_parent_pid": "",
+            "access": "READ_CONTROL|SYNCHRONIZE|FILE_GENERIC_READ"
+        }
+    ],
+    "handle_suspicious_process": [],
+    "trace": "87d1bf90-4545-4c0e-b641-4a811a27866a"
+}

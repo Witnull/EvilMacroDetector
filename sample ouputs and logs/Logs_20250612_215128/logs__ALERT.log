@@ -1,0 +1,38 @@
+[Thu Jun 12 21:51:57 2025][ALERT] Exported analysis results to C:\Users\null\Downloads\CCMD_DA\Logs/Logs_20250612_215128\Quarantine\Win10_Enc_Only.xlsm_analysis_20250612_215157.json
+[Thu Jun 12 21:51:57 2025][ALERT] Quarantined file: C:\Users\null\Downloads\Win10_Enc_Only.xlsm to C:\Users\null\Downloads\CCMD_DA\Logs/Logs_20250612_215128\Quarantine\Win10_Enc_Only.xlsm.quarantine_20250612_215157
+[Thu Jun 12 21:51:57 2025][ALERT] Removed VBA macros from C:\Users\null\Downloads\Win10_Enc_Only.xlsm -> C:\Users\null\Downloads\Win10_Enc_Only_clean.xlsm
+[Thu Jun 12 21:52:09 2025][ALERT] Exported analysis results to C:\Users\null\Downloads\CCMD_DA\Logs/Logs_20250612_215128\Quarantine\excel.exe_analysis_20250612_215209.json
+[Thu Jun 12 21:52:09 2025][ALERT] Attempting to terminate process PID 9916 - excel.exe
+[Thu Jun 12 21:52:09 2025][ALERT] Terminated process PID 9916
+[Thu Jun 12 21:52:32 2025][ALERT] Exported analysis results to C:\Users\null\Downloads\CCMD_DA\Logs/Logs_20250612_215128\Quarantine\excel.exe_analysis_20250612_215232.json
+[Thu Jun 12 21:52:32 2025][ALERT] Attempting to terminate process PID 9704 - excel.exe
+[Thu Jun 12 21:52:33 2025][ALERT] Terminated process PID 9704
+[Thu Jun 12 21:54:06 2025][ALERT] Exported analysis results to C:\Users\null\Downloads\CCMD_DA\Logs/Logs_20250612_215128\Quarantine\excel.exe_analysis_20250612_215406.json
+[Thu Jun 12 21:54:06 2025][ALERT] Attempting to terminate process PID 10024 - excel.exe
+[Thu Jun 12 21:54:06 2025][ALERT] Terminated process PID 10024
+[Thu Jun 12 21:54:16 2025][ALERT] Exported analysis results to C:\Users\null\Downloads\CCMD_DA\Logs/Logs_20250612_215128\Quarantine\excel.exe_analysis_20250612_215416.json
+[Thu Jun 12 21:54:16 2025][ALERT] Attempting to terminate process PID 6296 - excel.exe
+[Thu Jun 12 21:54:17 2025][ALERT] Terminated process PID 6296
+[Thu Jun 12 21:54:24 2025][ALERT] Blocked IP 192.168.146.128 with firewall rule Block_192.168.146.128_20250612_215424
+[Thu Jun 12 21:54:24 2025][ALERT] Exported analysis results to C:\Users\null\Downloads\CCMD_DA\Logs/Logs_20250612_215128\Quarantine\192.168.146.128_analysis_20250612_215424.json
+[Thu Jun 12 21:54:24 2025][ALERT] Blocked IP 192.168.146.128 with firewall rule Block_192.168.146.128_20250612_215424
+[Thu Jun 12 21:54:24 2025][ALERT] Exported analysis results to C:\Users\null\Downloads\CCMD_DA\Logs/Logs_20250612_215128\Quarantine\curl.exe_analysis_20250612_215424.json
+[Thu Jun 12 21:54:24 2025][ALERT] Attempting to terminate process PID 8404 - curl.exe
+[Thu Jun 12 21:54:24 2025][ALERT] Blocked IP 192.168.146.128 with firewall rule Block_192.168.146.128_20250612_215424
+[Thu Jun 12 21:54:24 2025][ALERT] Exported analysis results to C:\Users\null\Downloads\CCMD_DA\Logs/Logs_20250612_215128\Quarantine\192.168.146.128_analysis_20250612_215424.json
+[Thu Jun 12 21:54:24 2025][ALERT] Blocked IP 192.168.146.128 with firewall rule Block_192.168.146.128_20250612_215424
+[Thu Jun 12 21:54:24 2025][ALERT] Blocked IP 192.168.146.128 with firewall rule Block_192.168.146.128_20250612_215424
+[Thu Jun 12 21:54:24 2025][ALERT] Exported analysis results to C:\Users\null\Downloads\CCMD_DA\Logs/Logs_20250612_215128\Quarantine\192.168.146.128_analysis_20250612_215424.json
+[Thu Jun 12 21:54:24 2025][ALERT] Blocked IP 192.168.146.128 with firewall rule Block_192.168.146.128_20250612_215424
+[Thu Jun 12 21:54:24 2025][ALERT] Blocked IP 192.168.146.128 with firewall rule Block_192.168.146.128_20250612_215424
+[Thu Jun 12 21:54:24 2025][ALERT] Exported analysis results to C:\Users\null\Downloads\CCMD_DA\Logs/Logs_20250612_215128\Quarantine\192.168.146.128_analysis_20250612_215424.json
+[Thu Jun 12 21:54:24 2025][ALERT] Blocked IP 192.168.146.128 with firewall rule Block_192.168.146.128_20250612_215424
+[Thu Jun 12 21:54:24 2025][ALERT] Blocked IP 192.168.146.128 with firewall rule Block_192.168.146.128_20250612_215424
+[Thu Jun 12 21:54:24 2025][ALERT] Exported analysis results to C:\Users\null\Downloads\CCMD_DA\Logs/Logs_20250612_215128\Quarantine\192.168.146.128_analysis_20250612_215424.json
+[Thu Jun 12 21:54:24 2025][ALERT] Blocked IP 192.168.146.128 with firewall rule Block_192.168.146.128_20250612_215424
+[Thu Jun 12 21:54:25 2025][ALERT] Terminated process PID 8404
+[Thu Jun 12 21:54:27 2025][ALERT] Exported analysis results to C:\Users\null\Downloads\CCMD_DA\Logs/Logs_20250612_215128\Quarantine\systemresetplatform.exe_analysis_20250612_215427.json
+[Thu Jun 12 21:54:27 2025][ALERT] Attempting to terminate process PID 4284 - systemresetplatform.exe
+[Thu Jun 12 21:54:28 2025][ALERT] Terminated process PID 4284
+[Thu Jun 12 21:54:29 2025][ALERT] Exported analysis results to C:\Users\null\Downloads\CCMD_DA\Logs/Logs_20250612_215128\Quarantine\RjvPlatform.dll_analysis_20250612_215429.json
+[Thu Jun 12 21:54:34 2025][ALERT] Exported analysis results to C:\Users\null\Downloads\CCMD_DA\Logs/Logs_20250612_215128\Quarantine\RjvPlatform.dll_analysis_20250612_215434.json
