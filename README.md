@@ -85,7 +85,7 @@ non-network connection like: mspaint, notepad, calc, explorer
 This is a **threat_score** rule
 
 - 0 - 99 (for process 0 - 69) : Benign, safe 
-- 100+ (70+ for process) Harmful - action: quarantine, block ip related, terminate process
+- 100+ (50+ for process) Harmful - action: quarantine, block ip related, terminate process
 
 ***ALL MONITORS ARE RUNNING CONCURRENTLY***
 ## I. FILE MONITORING
@@ -142,7 +142,7 @@ Run a separate thread to monitor process creating, running,...
 
 - 3 - Analyse process dlls for **suspicious_dll** 
 
-- 5 - Take actions if **threat_score** >= 70
+- 5 - Take actions if **threat_score** >= 50
 
 ## III. NETWORK MONITOR
 
